@@ -453,7 +453,7 @@ function hexToRgb(hex) {
 var clickPopup;
 function init(){
 
-  zip.workerScriptsPath = "lib/";
+  zip.workerScriptsPath = "zip_js/";
 
   var i, x, y;
 
