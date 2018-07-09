@@ -4,12 +4,10 @@ Version: 0.1-1
 Date: 2018-07-01
 Title: Climate Indices
 Authors@R: c(person("Latorre Garcés", "Borja", role = c("aut", "cre"), email = "borja.latorre@csic.es"), person("Reig Gracia", "Fergus", role = c("aut", "cre"), email = "fergusrg@gmail.com"))
-Author: Latorre Garcés Borja [aut, cre]
-Maintainer: Reig Gracia Fergus <fergusrg@gmail.com>
+Author: c(person("Latorre Garcés", "Borja", role = c("aut", "cre"), email = "borja.latorre@csic.es"), person("Reig Gracia", "Fergus", role = c("aut", "cre"), email = "fergusrg@gmail.com"))
+Maintainer: c(person("Latorre Garcés", "Borja", role = c("aut", "cre"), email = "borja.latorre@csic.es"), person("Reig Gracia", "Fergus", role = c("aut", "cre"), email = "fergusrg@gmail.com"))
 Depends: R (>= 1.8.0), js, sp, zip, raster, R.utils, ncdf4
-Suggests: MASS,
-    knitr,
-    rmarkdown
+Suggests: MASS, knitr, rmarkdown
 Description: ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper ncwebmapper.
 License: GPL (>= 3)
 URL: https://github.com/ncwebmapper/ncwebmapper

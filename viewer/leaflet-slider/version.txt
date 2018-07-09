@@ -1,0 +1,2 @@
+https://github.com/Eclipse1979/leaflet-slider
+Adapted version https://github.com/Eclipse1979/leaflet-slider/tree/1cf3289f9a9e57015f36b72666544ba33d6d7dc1 (Github 20180101)

@@ -1,0 +1,5 @@
+https://github.com/MrMufflon/Leaflet.Coordinates
+http://mrmufflon.github.io/Leaflet.Coordinates/
+Adapted version MrMufflon-Leaflet.Coordinates-v0.1.5-5-g09ffcfd.zip
+
+
