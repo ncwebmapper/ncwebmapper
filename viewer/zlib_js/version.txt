@@ -1,1 +1,2 @@
 https://github.com/imaya/zlib.js
+https://github.com/imaya/zlib.js/blob/24942f54312b2b8143a2cf28280454073a3085d2/bin/gunzip.min.js (Github 20180707)
