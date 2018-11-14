@@ -166,7 +166,7 @@ get_tile <- function(px, py, zoom)
 #' @param r.crs r.crs
 #' @return max zoom
 readMaxZoom <- function(r.crs){
-    pixelSize <- min(res(r.crs))
+    pixelSize <- min(res(r.crs))#/1000
     maxzoom <- as.integer(log((20037508.343 * 2) / (256 * pixelSize)) / log(2) + 0.4999)
     return(maxzoom)
 }
@@ -187,4 +187,19 @@ read_coords <- function(nc, epsg){
   coords <- spTransform(coords, CRS("+init=epsg:4326"))
   coords <- coordinates(coords)
   return(coords)
+}
+
+#' read min max
+#' @param nc nc
+#' @return day min max
+readMinMax <- function(nc){
+  times <- length(nc$dim[["time"]]$vals)
+  minMax <- list(min=array(NA, dim=times), max=array(NA, dim=times))
+  i <- 1
+  for(i in 1:times){
+    data = ncvar_get(nc, nc$var[[1]]$name, c(1, 1, i), c(-1, -1, 1))
+    minMax$min[i] = minf(data)
+    minMax$max[i] = maxf(data)
+  }
+  return(minMax)
 }

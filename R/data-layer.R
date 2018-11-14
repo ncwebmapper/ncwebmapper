@@ -29,9 +29,11 @@
 
 #' @import raster
 #' @import R.utils
+#' @import ncdf4
 
 library(raster)
 library(R.utils)
+library(ncdf4)
 
 # source("functions.R")
 
@@ -191,6 +193,10 @@ write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0)
 							f <- file(sdat.name, 'wb')
 							writeBin(as.numeric(as.vector(m1)), f, size=4, endian="little")
 							close(f)
+
+							# f <- file(sdat.name, 'rb')
+							# aux <- matrix(readBin(f, numeric(), size=4, endian = "little", n=256*256), nrow = 256, ncol = 256)
+							# close(f)
 							gzip(sdat.name, destname=file.path(folder, "map", time+t+timeshift, zoom, i, paste0(x1[2]+x2[2]-j, ".bin.gz")), overwrite=TRUE, remove=TRUE)
 						}
 					}

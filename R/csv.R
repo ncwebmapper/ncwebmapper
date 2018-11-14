@@ -29,9 +29,11 @@
 
 #' @import zip
 #' @import sp
+#' @import ncdf4
 
 library(zip)
 library(sp)
+library(ncdf4)
 
 # source("functions.R")
 
@@ -72,7 +74,11 @@ write_csv <- function(file, folder, epsg, dates, formatdates)
 		# if(!missing(formatdates)){
 		# 	times = format(times, formatdates)
 		# }
-		times <- read_times(nc, formatdates)
+		if(!missing(formatdates)){
+			times <- read_times(nc, formatdates)
+		}else{
+			times <- read_times(nc)		
+		}
 	}else{
 		times <- dates
 	}
@@ -111,6 +117,7 @@ write_csv <- function(file, folder, epsg, dates, formatdates)
 			if(sum(is.na(matrix[i,])) < ntime)
 			{ #j = 1; i = 3; print(paste(j, " ", i))
 				# three-level folder tree
+				# print(paste(i, j))
 				dir.create(file.path(folder, "csv", floor(id/100)%%10,
 					floor(id/10)%%10, id%%10), recursive=TRUE, showWarnings=FALSE)
 
@@ -119,12 +126,12 @@ write_csv <- function(file, folder, epsg, dates, formatdates)
 				colnames(table) <- c(nc$dim[["time"]]$units, nc$var[[1]]$name)
 				table[,1] <- format(times)
 				table[,2] <- matrix[i,]
-
+				table[table=="NaN"] <- NA
 				# write csv and zip
 				dir <- file.path(folder, "csv", floor(id/100)%%10, floor(id/10)%%10, id%%10)
 				zip.file <- file.path(paste0(id, ".zip"))
 				file <- file.path(paste0(coords[id,1], "_", coords[id,2], ".csv"))
-				write.table(table, file=file, row.names=FALSE, sep=";", dec=",") #sep=",", dec=".")
+				write.table(table, file=file, row.names=FALSE, sep=";", dec=",", quote=FALSE) #sep=",", dec=".")
 				if (file.exists(zip.file)) file.remove(zip.file)
 				zip(zip.file, c(file))
 				file.remove(file)

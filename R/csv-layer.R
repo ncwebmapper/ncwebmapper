@@ -30,10 +30,12 @@
 #' @import raster
 #' @import R.utils
 #' @import sp
+#' @import ncdf4
 
 library(raster)
 library(R.utils)
 library(sp)
+library(ncdf4)
 
 # source("functions.R")
 
