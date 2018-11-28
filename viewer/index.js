@@ -1,19 +1,45 @@
 
 //Config parameters
 var zoom = 6;
-var timeI = times.length-1;
 
-var varMin =  0.0;
-var varMax = 25.0;
+// Global config
+var chooseText = "Choose Index";
 
-var map_position = 0;
+// Map config
+var nGrades = 9;
+
+////////////////////////////////////////////////////
+
+if(Object.keys(varTitle).length>0){
+  var varName = Object.keys(varTitle)[1];
+}else{
+  var varName = NaN;
+}
+var selectName = varName;
+var timeI = times[varName].length-1;
+
+////////////////////////////////////////////////////
+
+function makeArray(count, content) {
+   var result = [];
+   if(typeof content == "function") {
+      for(var i = 0; i < count; i++) {
+         result.push(content(i));
+      }
+   } else {
+      for(var i = 0; i < count; i++) {
+         result.push(content);
+      }
+   }
+   return result;
+}
 
 //////////////////////////PARÁMETROS//////////////////////////
 
 /* Actualiza la URL con los parámetros que deficnen el mapa a cargar */
 function updateURL(){
     var myURL = location.protocol + '//' + location.host + location.pathname;
-    document.location = myURL + "#map_position=" + timeI;
+    document.location = myURL + "#map_name=" + varName + "#map_position=" + timeI;
 };
 
 /* Leer parámetros URL con #
@@ -23,25 +49,22 @@ var getUrlParameter = function getUrlParameter(sParam) {
         sURLVariables = sPageURL.split('#'),
         sParameterName,
         i;
-
     for (i = 0; i < sURLVariables.length; i++) {
         sParameterName = sURLVariables[i].split('=');
-
         if (sParameterName[0] === sParam) {
-            return sParameterName[1] === undefined ? true : sParameterName[1];
+          return sParameterName[1] === undefined ? true : sParameterName[1];
         }
     }
 };
 
-map_position = parseInt(getUrlParameter("map_position"));
-if(!isNaN(map_position)){
-  timeI = map_position;
-}
+var map_position = parseInt(getUrlParameter("map_position"));
+var map_name = getUrlParameter("map_name");
 
 ////////////////////////////////////////////////////////
 
 var hybridMutant;
 var controlCoordinates;
+var controlDownload;
 
 var degrees2meters = function(lon,lat) {
  var x = lon * 20037508.343 / 180;
@@ -50,9 +73,6 @@ var degrees2meters = function(lon,lat) {
  return [x, y]
 }
 
-// cursorx=lat; cursory=lon;z=zoom;
-// cursorx=38.7283759182398; cursory=-0.19775390625000003;z=7;
-// cursory=4686507.078270013; cursorx=8560.947168029787; z=8;
 extractCoorZoom = function(latlng, z, functionValue, int){
 
   int = typeof int !== 'undefined' ? int : false;
@@ -88,7 +108,6 @@ extractCoorZoom = function(latlng, z, functionValue, int){
   }
   var bounds={x:tx, y:ty, z:z, px:px, py:py};
   var url=getURL(bounds, mousemoveTile, int);
-
   return(value);
 }
 
@@ -97,8 +116,109 @@ function downloadMarkerCSV(event){
   downloadCSV(clickPopup.value);
 }
 
+function showMarkerCSV(event){
+  event.stopPropagation();
+  showCSV(clickPopup.value);
+}
+
+var popupGraph;
+function showCSV(x){
+ downloadCSV(x, false);
+}
+
+function parseDates(input) { //"28/10/50"
+  var newInput = input.slice();
+  for (i = 0; i < newInput.length; i++){
+    newInput[i] = parseDate(newInput[i]);
+  }
+  return newInput;
+}
+
+function parseDate(input) { //"28/10/50"
+  if(input!=undefined){
+    input=input.replace('"', "").replace('"', "");
+    if(input.indexOf('/')>-1){
+      var parts = input.split('/');
+      year = parseInt(parts[2]);
+      if(year<50){
+        year = 2000 + year;
+      }else if(year>=50 & year<100){
+        year = 1900 + year;
+      }
+      month = parts[1];
+      day = parts[0];
+    }else{
+      var parts = input.split('-');
+      year = parts[0];
+      month = parts[1];
+      day = parts[2];
+    }
+    return Date.UTC(year,  parseInt(month)-1, day);
+  }else{
+    return null;
+  }
+}
+var aa;
+function showDygraph(data, filename, type){
+  var file = new Blob([data], {type: type});
+  url = URL.createObjectURL(file);
+  var graph = new Dygraph(
+    document.getElementById("popGraph"),
+    url,
+    {
+      digitsAfterDecimal: 3,
+      fillGraph: true,
+      delimiter: ";",
+      ylabel: legendTitle[varName],
+      xlabel: "Date",
+      xValueParser: function(str) {
+        if(typeof str == "string"){
+          var readTime = str;
+        }else{
+          var readTime = times[varName][str-1];
+        }
+        return parseDate(readTime);
+      },
+      axes: {
+        x: {
+          // pixelsPerLabel: 10,
+          valueFormatter: function(millis, opts, seriesName, dygraph, row, col) {
+            var fecha = new Date(millis);
+            return fecha.getDate() + "/" + (fecha.getMonth() + 1) + "/" + fecha.getFullYear() + " ";
+           
+          },
+          axisLabelFormatter(number, granularity, opts, dygraph){
+            // console.log(number);
+            // console.log(granularity);
+            var fecha = new Date(number);
+            return (fecha.getMonth() + 1) + "/" + fecha.getFullYear() + " ";
+          }
+        },
+        y:{
+          valueFormatter: function(millis, opts, seriesName, dygraph, row, col) {
+            return " " + millis.toFixed(2);
+          }
+        }
+      }
+    }
+  );
+  document.getElementById("popGraph").parentNode.style.width = "auto";
+  var popup = document.getElementById("popGraph").parentNode.parentNode.parentNode;
+  popup.style.left = window.innerWidth/2 - popup.offsetWidth -10 + "px";
+  popup.style.bottom =  - popup.offsetHeight/2 + "px";
+  document.getElementById("popGraph").parentNode.parentNode.nextSibling.style.display= "none";
+}
+
+function urlCSV(x){
+  f1 = parseInt(x) % 10;
+  f2 = parseInt(parseInt(x)/10) % 10;
+  f3 = parseInt(parseInt(x)/100) % 10;
+  url = "./maps/" + varName + "/csv/" + f3 + "/"  + f2 + "/" + f1 + "/" + x + ".zip";
+  return url;
+}
+
 //x = "20"; y = "12"
-function downloadCSV(x){
+function downloadCSV(x, downloadFile=true){
   var request;
   var arrayBuffer;
   var bytes;
@@ -107,21 +227,21 @@ function downloadCSV(x){
   // Copiado de https://stackoverflow.com/questions/13405129/javascript-create-and-save-file
   // Function to download data to a file
   function download(data, filename, type) {
-     var file = new Blob([data], {type: type});
-     if (window.navigator.msSaveOrOpenBlob) // IE10+
-       window.navigator.msSaveOrOpenBlob(file, filename);
-     else { // Others
-       var a = document.createElement("a"),
-       url = URL.createObjectURL(file);
-       a.href = url;
-       a.download = filename;
-       document.body.appendChild(a);
-       a.click();
-       setTimeout(function() {
-         document.body.removeChild(a);
-         window.URL.revokeObjectURL(url); 
-       }, 0); 
-     }
+    var file = new Blob([data], {type: type});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+     window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+     var a = document.createElement("a"),
+     url = URL.createObjectURL(file);
+     a.href = url;
+     a.download = filename;
+     document.body.appendChild(a);
+     a.click();
+     setTimeout(function() {
+       document.body.removeChild(a);
+       window.URL.revokeObjectURL(url); 
+     }, 0); 
+    }
   }
 
  onload = function (e) {
@@ -133,13 +253,18 @@ function downloadCSV(x){
     } 
 
     var blob = new Blob([bytes], {type: 'application/zip'});
-    //window.location.href = URL.createObjectURL(b);
 
     zip.createReader(new zip.BlobReader(blob), function(zipReader){
       zipReader.getEntries(function(entries){
         var filename = entries[0].filename;
         entries[0].getData(new zip.BlobWriter('text/plain'), function(data) {
-          download(data, filename, 'text/plain');
+          if(downloadFile){
+            download(data, filename, 'text/plain');
+          }else{
+            popupGraph.setLatLng(map.getCenter());
+            popupGraph.openOn(map);
+            showDygraph(data, filename, 'text/plain');
+          }
         });
       });
     }, function(error) { 
@@ -156,15 +281,24 @@ function downloadCSV(x){
 
   request.onerror = onerror;
   request.onload = onload;
-  f1 = parseInt(x) % 10;
-  f2 = parseInt(parseInt(x)/10) % 10;
-  f3 = parseInt(parseInt(x)/100) % 10;
-  url = "./csv/" + f3 + "/"  + f2 + "/" + f1 + "/" + x + ".zip";
+  url = urlCSV(x);
   asynchronous = true;
   request.open('GET', url, asynchronous);
   request.overrideMimeType('text\/plain; charset=x-user-defined');
   request.send(null);  
 }
+
+function showInfo(value) {
+  if(value!=undefined){
+    selectName = value;
+  }
+  map.addControl(map_control_info);
+};
+
+function removeInfo() {
+  selectName = varName;
+  map.removeControl(map_control_info);
+};
 
 function getURL(bounds, done, int) {
 
@@ -225,13 +359,6 @@ function getURL(bounds, done, int) {
           charView[1] = decompressed[l+1];
           charView[2] = decompressed[l+2];
           charView[3] = decompressed[l+3];
-
-          // TODO Remove this fix for Roberto's units
-          if(!int)
-          {
-              floatView[0] = floatView[0] / 10.0;
-          }
-
           floatArray[k/4] = floatView[0];
 
           if(isNaN(floatView[0]))
@@ -242,7 +369,7 @@ function getURL(bounds, done, int) {
           else
           {
             // Scale
-            l = parseInt((floatView[0] - varMin) / (varMax - varMin) * 255.0);
+            l = parseInt((floatView[0] - varMin[varName][timeI]) / (varMax[varName][timeI] - varMin[varName][timeI]) * 255.0);
 
             if(l < 0)
             {
@@ -258,12 +385,6 @@ function getURL(bounds, done, int) {
             pix[k+1] = palette[l+1];
             pix[k+2] = palette[l+2];
             pix[k+3] = 255;
-
-            // Transparent
-            if(floatView[0] <= varMin)
-            {
-              pix[k+3] = 0;
-            }
           }
 
           k += 4;
@@ -295,14 +416,14 @@ function getURL(bounds, done, int) {
   }else{
     timeNow = 0;
   }
-  url = './map/' + timeNow + '/' + z + '/' + x + '/' + y + '.bin.gz';
+  url = './maps/' + varName + '/map/' + timeNow + '/' + z + '/' + x + '/' + y + '.bin.gz';
 
   if(z > mapMaxZoom && !int)
   {
     qz = Math.pow(2, z - mapMaxZoom );
     qx = x - parseInt( x  / qz ) * qz;
     qy = y - parseInt( y  / qz ) * qz;
-    url = './map/' + timeNow + '/' + mapMaxZoom + '/' + parseInt( x / qz ) + '/' + parseInt( y  / qz ) + '.bin.gz';
+    url = './maps/' + varName + '/map/' + timeNow + '/' + mapMaxZoom + '/' + parseInt( x / qz ) + '/' + parseInt( y  / qz ) + '.bin.gz';
   }
   else
   {
@@ -310,7 +431,6 @@ function getURL(bounds, done, int) {
     qx = x;
     qy = y;
   }
-
   asynchronous = true;
   request.open('GET', url, asynchronous);
   request.responseType = "arraybuffer";
@@ -328,7 +448,6 @@ function getURL2(bounds) {
   var y = Math.pow(2, bounds.z) - 1 - bounds.y;
   var z = bounds.z;
   var path = './' + z + '/' + x + '/' + y + '.png';
-//  if ((z >= mapMinZoom) && (z <= mapMaxZoom)) {
   if (z >= mapMinZoom) {
     return path;
   } else {
@@ -400,7 +519,10 @@ L.tileLayerPro = function (url, options) {
 
 ////////////////////////////////////////////////////////
 
- var map;
+var map;
+var legend;
+var droughtOverlayMap;
+var customMap;
 
  var poly = function(x, varargs) {
   var i = arguments.length - 1, n = arguments[i];
@@ -427,12 +549,6 @@ function pal2rgb(x)
   }
 
   return palrgb[x];
-
-//  var r = palette[0+3*x];
-//  var g = palette[1+3*x];
-//  var b = palette[2+3*x];
-
-//  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
 function hexToRgb(hex) {
@@ -450,8 +566,97 @@ function hexToRgb(hex) {
     } : null;
 }
 
+function changeMap(value){
+  removeInfo();
+  changeMap_(value);
+}
+
+function changeMap_(value){
+  if(varName!=value){
+    var oldTime = parseDate(times[varName][timeI]);
+    varName = value;
+    selectName = varName;
+    var newTimes = parseDates(times[varName]);
+    
+    // https://stackoverflow.com/questions/8584902/get-closest-number-out-of-array
+    var closest = newTimes.reduce(function(prev, curr) {
+      return (Math.abs(curr - oldTime) < Math.abs(prev - oldTime) ? curr : prev);
+    });
+    timeI = newTimes.indexOf(closest);
+    if(slider!=undefined){
+      slider.remove(map);
+    }
+    updateSlider();
+    
+    controlLayers.remove(map);
+    controlLayers.addTo(map);
+
+    map_control_name._container.innerHTML = varTitle[value];
+    controlDownload._container.firstChild.href =  "nc/" + varName + ".nc";
+
+    updateCustomMap();
+    updateURL();
+
+    var text = L.DomUtil.create("div", "selectLayer", controlLayers._container.firstChild);
+    text.textContent = 'Index';  
+  }
+}
+
+function updateCustomMap(){
+  if(customMap.hasLayer(droughtOverlayMap) && map.hasLayer(customMap)){
+    customMap.removeLayer(droughtOverlayMap)
+    customMap.addLayer(droughtOverlayMap);
+  }
+}
+
+var map_control_name;
 var clickPopup;
+var slider;
+var controlLayers;
+
+function updateSlider(){
+  if(times[varName].length>1){
+    slider = L.control.slider(function(value) { 
+    }, {
+      min: 0,
+      max: times[varName].length-1, 
+      value: timeI,
+      step: 1,
+      size: '250px',
+      orientation:'horizontal', 
+      id: 'slider',
+      logo: 'Time',
+      increment:  true,
+      getValue: function(value){
+        timeI = value;        
+        updateCustomMap();
+        if(legend != undefined & typeof legend.remove === "function"){
+          legend.remove();
+          legend.addTo(map);
+        }
+        updateURL();
+        return times[varName][value];
+      }
+    });
+    slider.addTo(map);
+  }
+  return slider;
+}
+
+
+var aa;
 function init(){
+
+ document.getElementById("title").innerHTML = title;
+
+ if(!isNaN(map_position)){
+  timeI = map_position;
+  }
+
+  if(typeof map_name != "undefined"){
+    varName = map_name;
+    selectName = varName;
+  }
 
   zip.workerScriptsPath = "zip_js/";
 
@@ -466,13 +671,9 @@ function init(){
 
   var options = {
     controls: [],
-    // projection: "EPSG:900913",
-    // displayProjection: new OpenLayers.Projection("EPSG:4326"),
     minZoom: mapMinZoom, 
-    // maxZoom: mapMaxZoom,
     center: center, 
     zoom: zoom,
-    // zoomControl: false,
     attributionControl: false
   };
   map = L.map("map", options);
@@ -482,7 +683,7 @@ function init(){
   });
   attribution.addTo(map);
 
-  var customMap = L.layerGroup();
+  customMap = L.layerGroup();
 
   function newDroughtOverlayMap(mapFunction){
     droughtOverlayMapAux = L.tileLayerPro(mapFunction, {
@@ -502,7 +703,6 @@ function init(){
   
   var urlLayer = 'http://korona.geog.uni-heidelberg.de/tiles/adminb/x={x}&y={y}&z={z}';
   var googleLabelLayer = L.tileLayerGoogle(urlLayer, {
-    // attribution: '<a href="info.html">Reference the data</a>' + ' | ' + 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>' + ' | ' + 'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' + ' | ' + '<a href="http://leafletjs.com">Leaflet</a>',
     attribution: '<a href="info.html">Reference the data</a>' + ' | ' + '<a href="http://stamen.com">Stamen Design</a>' + ' | ' + '<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' + ' | ' + '<a href="http://leafletjs.com">Leaflet</a>',
     subdomains: 'abcd',
     minZoom: 0,
@@ -528,29 +728,7 @@ function init(){
 
   customMap.addTo(map);
 
-  if(times.length>1){
-    var slider = L.control.slider(function(value) { 
-    }, {
-      min: 0,
-      max: times.length-1, 
-      value: timeI,
-      step: 1,
-      size: '250px',
-      orientation:'horizontal', 
-      id: 'slider',
-      logo: 'Time',
-      increment:  true,
-      getValue: function(value){
-        timeI = value;        
-        if(customMap.hasLayer(droughtOverlayMap) && map.hasLayer(customMap)){
-          customMap.removeLayer(droughtOverlayMap)
-          customMap.addLayer(droughtOverlayMap);
-        }
-        updateURL();
-        return times[value];
-      }
-    });
-  }
+  slider = updateSlider();
 
   var mouseTimeOut;
   var popup;
@@ -579,8 +757,8 @@ function init(){
   });
 
   map.on('move', function(event) {  
-    if(times.length>1){ 
-      slider._collapse(); 
+    if(times[varName].length>1){ 
+      slider._collapse();
     }
   });
 
@@ -593,7 +771,7 @@ function init(){
   function showClickPopup(event) {
     dblclick = false;
     setTimeout(function() {
-      if(times.length>1){
+      if(times[varName].length>1){
         slider._collapse();
       }
       if(!dblclick){
@@ -602,7 +780,7 @@ function init(){
     }, 500);   
   }
 
-  function showPopup(latlng, update=false) { 
+  function showPopup(latlng, update=false) {
       var launchPop = function(value){
         if(value>0){
           clickPopup
@@ -614,7 +792,7 @@ function init(){
           controlCoordinates._update({latlng: latlng});
         }
       }
-      coor = extractCoorZoom(latlng, 9, launchPop, true)    
+      coor = extractCoorZoom(latlng, mapMaxZoom+4, launchPop, true)    
   }
 
   var returnClickPopUp = function(nothing, options){
@@ -627,47 +805,177 @@ function init(){
     return clickPopup;
   }
   clickPopup = returnClickPopUp();
+
   controlCoordinates = L.control.coordinates({
     position:"bottomleft", //optional default "bottomright" "bottomleft"
     decimals:2, //optional default 4
     decimalSeperator:".", //optional default "."
-    labelTemplateLat:'<a onclick="downloadMarkerCSV(event)" href="javascript:void(0);">' + 'Download' + '</a>' + " " + "Lat: {y}", //optional default "Lat: {y}"
-    labelTemplateLng:"Lng: {x}", //optional default "Lng: {x}"
+    labelTemplateLat:'<a onclick="downloadMarkerCSV(event)" href="javascript:void(0);">' + 'Download point' + '</a>' + " " + "Lat: {y}", //optional default "Lat: {y}"
+    labelTemplateLng:"Lng: {x}" + ' <a onclick="showMarkerCSV(event)" href="javascript:void(0);">' + 'Graph ' + '</a>', //optional default "Lng: {x}"
     enableUserInput:true, //optional default true
     useDMS:false, //optional default false
     useLatLngOrder: true, //ordering of labels, default false-> lng-lat
     markerType: returnClickPopUp, //optional default L.marker
   }).addTo(map);
-  // clickPopup.setLatLng({lat:41.650, lng:-0.883});
+
   showPopup(center);
-  // controlCoordinates._update({latlng: {lat:41.650, lng:-0.883}});
 
   map.on('click', showClickPopup);
-  if(times.length>1){
-    slider.addTo(map);
-  }
+
   map.on("zoomend", function (e) { 
     zoom = map.getZoom();
   });
   document.getElementById('map').style.cursor = 'initial';
 
   function getColor(d) { 
-    return pal2rgb(parseInt(255*(d-varMin)/(varMax-varMin)));
+    return pal2rgb(parseInt(255*(d-varMin[varName][timeI])/(varMax[varName][timeI]-varMin[varName][timeI])));
   }
 
-  var nGrades = 5;
-  var gradesColor = Array.apply(null, Array(nGrades+1)).map(function (_, i) {return parseInt(varMin+i*(varMax-varMin)/nGrades);});
-
-  var legend = L.control({position: 'bottomright', alpha: 1.0});
-  legend.onAdd = function (map) { 
+  legend = L.control({position: 'bottomright', alpha: 1.0});
+  legend.onAdd = function (map) {
+    var gradesColor = Array.apply(null, Array(nGrades+1)).map(function (_, i) {return parseInt(varMin[varName][timeI]+i*(varMax[varName][timeI]-varMin[varName][timeI])/nGrades);});
     var div = L.DomUtil.create('div', 'info legend'), grades = gradesColor, labels = [];
-    div.innerHTML += 'Daily PPT (mm)<br>'; 
+    div.innerHTML += legendTitle[varName] + '<br>'; 
     // loop through our density intervals and generate a label with a colored square for each interval 
-    for (var i = 0; i < grades.length; i++) { 
-      div.innerHTML += '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+'); 
+    for (var i = 0; i < grades.length; i++) {
+      div.innerHTML += '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' + grades[i];
+      if(grades[i + 1]==undefined){
+        div.innerHTML += '+';
+      }else{
+        div.innerHTML += '&ndash;' + grades[i + 1] + '<br>';
+      } 
     } 
-    return div; 
-  }; 
+    return div;
+  };
   legend.addTo(map);
-}
 
+  var baseTree = {
+    label: chooseText,
+    children: [],
+    name: "Index",
+  };
+
+  // https://jjimenezshaw.github.io/Leaflet.Control.Layers.Tree/examples/options.html
+  function children_label(childrenObject, level){
+    var cycle = L.tileLayer('', "");
+    var topVar = [];
+    for (var i = 0; i < Object.keys(childrenObject).length; i++) {
+      if(level<=0){
+        var text = Object.keys(childrenObject)[i];
+      }else{
+        var text = '<a onmouseover="showInfo(\'' + childrenObject[Object.keys(childrenObject)[i]][0] + '\')" onmouseout="removeInfo()">'+ Object.keys(childrenObject)[i] + '</a>';
+      }
+      var iVar = {
+        label: text,
+        children: []
+      };
+      if(childrenObject[Object.keys(childrenObject)[i]].length>0){
+        for (var f = 0; f < childrenObject[Object.keys(childrenObject)[i]].length; f++) {
+          if(childrenObject[Object.keys(childrenObject)[i]][f].length>0){
+            var text = '<a onmouseover="showInfo(\'' + childrenObject[Object.keys(childrenObject)[i]][f] + '\')" onmouseout="removeInfo()" onclick="changeMap(\'' + childrenObject[Object.keys(childrenObject)[i]][f] + '\')" href="javascript:void(0);">'+ menuNames[childrenObject[Object.keys(childrenObject)[i]][f]] + '</a>';
+            iVar["children"][f] = {  
+              label: text,
+              name: "Index",
+            }
+          }else{  
+            iVar["children"][f] = children_label(childrenObject[Object.keys(childrenObject)[i]][f], level + 1);
+          }
+        }
+      }else{
+        iVar["children"] = children_label(childrenObject[Object.keys(childrenObject)[i]], level + 1);
+      }
+      topVar[i] = iVar;
+    }
+    if(topVar.length==1){
+      topVar = topVar[0];
+    }
+    return topVar;
+  };
+
+  if(Object.keys(varNames).length>1){
+    baseTree["children"] = children_label(varNames, 0);
+    var overalysTree = {
+      name: "Index",    
+    }
+    var optionsTree = {
+      name: "Index",
+    };
+    controlLayers = L.control.layers.tree(baseTree, overalysTree, optionsTree)
+    controlLayers.addTo(map);
+    controlLayers.collapseTree();
+    var text = L.DomUtil.create("div", "selectLayer", controlLayers._container.firstChild);
+    text.textContent = 'Index';
+  }
+
+  if(!isNaN(varName)){
+    L.Control.Download = L.Control.extend({
+      options: {
+        position: 'bottomleft',
+      },
+      onAdd: function(map) {
+        this._map = map;
+        var container = this._container = L.DomUtil.create('div', 'map_name');
+        var link = L.DomUtil.create("a", "uiElement label", container);
+        link.href =  "nc/" + varName + ".nc";
+        link.textContent = 'Download NC';
+        return container;
+      },
+      onRemove(map){
+      }
+    });
+    controlDownload = new L.Control.Download();
+    controlDownload.addTo(map);
+  }
+
+  if(!isNaN(varName)){
+    L.Control.Names = L.Control.extend({
+      options: {
+        position: 'bottomleft',
+      },
+      onAdd: function(map) {
+        this._map = map;
+        var container = this._container = L.DomUtil.create('div', 'map_name');
+        container.innerHTML = varTitle[varName];
+        
+        // aa=container;
+        container.onmouseover = function() { showInfo(); };
+        container.onmouseout = function() { removeInfo(); };
+        return container;
+      },
+      onRemove(map){
+      }
+    });
+
+    map_control_name = new L.Control.Names();
+    map.addControl(map_control_name);
+  }
+  
+  // https://stackoverflow.com/questions/33614912/how-to-locate-leaflet-zoom-control-in-a-desired-position
+  L.Control.Info = L.Control.extend({
+    options: {
+      position: 'topleft',
+    },
+    onAdd: function(map) {
+      this._map = map;
+      var container = this._container = L.DomUtil.create('div', 'map_name');
+      container.id = "map_info";
+      container.innerHTML = "";
+      for(i = 0; i < generalInformationNames.length; i++) {
+        if(generalInformationNames[i]!="null"){
+          container.innerHTML = container.innerHTML + generalInformationNames[i]  + ":" +  " " + generalInformation[selectName][i] + "</br>";
+        }
+      }
+      return container;
+    },
+    onRemove(map){
+    }
+  });
+
+  map_control_info = new L.Control.Info();
+
+  popupGraph = L.popup({
+    autoClose:false
+  })
+    .setLatLng(map.getCenter())
+    .setContent('<div id="popGraph">Loading graph</div>');
+}
