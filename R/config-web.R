@@ -57,7 +57,7 @@ library(raster)
 #' @param legend legend
 #' @param write write
 #' @export
-config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, lonIni, latEnd, lonEnd, timeIni, timeEnd, varmin, varmax, infoJs, legend="NaN", write=TRUE){
+config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, lonIni, latEnd, lonEnd, timeIni, timeEnd, varmin, varmax, infoJs = NA, legend="NaN", write=TRUE){
 
   if(missing(infoJs) || sum(!is.na(infoJs))==0)
   {
@@ -154,12 +154,8 @@ config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, 
   # increase resolution 16 times (2^4)
   infoJs$levelCsv <- maxzoom + 3
 
-  varNames <- varName
-  varTitle <- varName
-  legendTitle <- "Values"
-
   if(write){
-    writeJs(folder, infoJs, varNames, varTitle, legendTitle)
+    writeJs(folder, infoJs)
   }
 
   return(infoJs)
@@ -254,13 +250,39 @@ generaltojs <- function(name, value){
 #' @param varNames varNames
 #' @param varTitle varTitle
 #' @param legendTitle legendTitle
+#' @param menuNames menuNames
+#' @param generalInformation generalInformation
+#' @param generalInformationNames generalInformationNames
 #' @param title title
 #' @return None
 writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, generalInformation, generalInformationNames, title="Map web"){
   file <-  file.path(folder, "times.js")
 
+  if(missing(varTitle)){
+    if(length(infoJs$varmin)>1){
+      varTitle = names(infoJs$varmin)
+      names(varTitle) = names(infoJs$varmin)
+    }else{
+      varTitle = names(infoJs$varmin)
+    }
+  }
+
+  if(missing(varNames)){
+    # Ej. 
+    # varNames = list("Temperature-based"=list("cd"=c("cd_month", "cd_season", "cd_year"), "gtx"=c("gtx_year"), "ptg"=c("ptg_year")), "Precipitation-based"=list("mfi"=c("mfi_year")), "Bioclimatic"=list("bio4" = c("bio4_year"), "bio5" = c("bio5_year")))
+    if(length(infoJs$varmin)>1){
+     varNames = list("Menu1"=list("SubMenu1"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)==0]), "Menu2"=list("SubMenu1"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)!=0]))
+    }else{
+      varNames = names(infoJs$varmin)
+    }
+  }
+
   if(missing(menuNames)){
     menuNames = varTitle
+  }
+
+  if(missing(legendTitle)){
+    legendTitle = "Legend"
   }
 
   text.js <- ""
@@ -293,9 +315,13 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
   text.js <- paste(text.js, arrayRtojs(name="menuNames", value=menuNames))
   if(!missing(generalInformation)){
     text.js <- paste(text.js, generaltojs(name="generalInformation", value=generalInformation))
+  }else{
+    text.js <- paste(text.js, paste0("var generalInformation = ", "undefined", ";\n"))
   }
-  if(!missing(generalInformation)){
+  if(!missing(generalInformationNames)){
     text.js <- paste(text.js, paste0("var generalInformationNames = ", "[", "'", paste(generalInformationNames, collapse="', '"), "'", "]", ";\n"))
+  }else{
+    text.js <- paste(text.js, paste0("var generalInformationNames = ", "undefined", ";\n"))
   }
   text.js <- uglify_optimize(text.js)
 

@@ -10,13 +10,18 @@ var nGrades = 9;
 
 ////////////////////////////////////////////////////
 
+function getTimeI(){
+  return times[varName].length-1;
+}
+
 if(Object.keys(varTitle).length>0){
   var varName = Object.keys(varTitle)[1];
 }else{
-  var varName = NaN;
+  var varName = "NaN";
 }
 var selectName = varName;
-var timeI = times[varName].length-1;
+var timeI = getTimeI();
+updateURL();
 
 ////////////////////////////////////////////////////
 
@@ -185,7 +190,7 @@ function showDygraph(data, filename, type){
           valueFormatter: function(millis, opts, seriesName, dygraph, row, col) {
             var fecha = new Date(millis);
             return fecha.getDate() + "/" + (fecha.getMonth() + 1) + "/" + fecha.getFullYear() + " ";
-           
+
           },
           axisLabelFormatter(number, granularity, opts, dygraph){
             // console.log(number);
@@ -213,7 +218,12 @@ function urlCSV(x){
   f1 = parseInt(x) % 10;
   f2 = parseInt(parseInt(x)/10) % 10;
   f3 = parseInt(parseInt(x)/100) % 10;
-  url = "./maps/" + varName + "/csv/" + f3 + "/"  + f2 + "/" + f1 + "/" + x + ".zip";
+  if(varName==null){
+    addName = ""
+  }else{
+    addName = "/" + varName
+  }
+  url = "./maps" + addName + "/csv/" + f3 + "/"  + f2 + "/" + f1 + "/" + x + ".zip";
   return url;
 }
 
@@ -239,18 +249,18 @@ function downloadCSV(x, downloadFile=true){
      a.click();
      setTimeout(function() {
        document.body.removeChild(a);
-       window.URL.revokeObjectURL(url); 
-     }, 0); 
+       window.URL.revokeObjectURL(url);
+     }, 0);
     }
   }
 
  onload = function (e) {
     arrayBuffer = request.responseText;
     bytes = new Uint8Array(arrayBuffer.length);
-    // Walk through each character in the stream. 
+    // Walk through each character in the stream.
     for (var fileidx = 0; fileidx < arrayBuffer.length; fileidx++) {
       bytes[fileidx] = arrayBuffer.charCodeAt(fileidx) & 0xff;
-    } 
+    }
 
     var blob = new Blob([bytes], {type: 'application/zip'});
 
@@ -267,9 +277,9 @@ function downloadCSV(x, downloadFile=true){
           }
         });
       });
-    }, function(error) { 
+    }, function(error) {
       errorMessage = "Please, select a point with data";
-      alert(errorMessage); 
+      alert(errorMessage);
     });
   }
 
@@ -285,7 +295,7 @@ function downloadCSV(x, downloadFile=true){
   asynchronous = true;
   request.open('GET', url, asynchronous);
   request.overrideMimeType('text\/plain; charset=x-user-defined');
-  request.send(null);  
+  request.send(null);
 }
 
 function showInfo(value) {
@@ -361,7 +371,7 @@ function getURL(bounds, done, int) {
           charView[3] = decompressed[l+3];
           floatArray[k/4] = floatView[0];
 
-          if(isNaN(floatView[0]))
+          if(floatView[0]==null)
           {
             // Transparent
             pix[k+3] = 0;
@@ -391,7 +401,7 @@ function getURL(bounds, done, int) {
        }
      }
 
-      ctx.putImageData(imgd, 0, 0);            
+      ctx.putImageData(imgd, 0, 0);
     }
 
     if(px == undefined){
@@ -416,14 +426,19 @@ function getURL(bounds, done, int) {
   }else{
     timeNow = 0;
   }
-  url = './maps/' + varName + '/map/' + timeNow + '/' + z + '/' + x + '/' + y + '.bin.gz';
+  if(varName==null){
+    addName = ""
+  }else{
+    addName = "/" + varName
+  }
+  url = './maps' + addName + '/map/' + timeNow + '/' + z + '/' + x + '/' + y + '.bin.gz';
 
   if(z > mapMaxZoom && !int)
   {
     qz = Math.pow(2, z - mapMaxZoom );
     qx = x - parseInt( x  / qz ) * qz;
     qy = y - parseInt( y  / qz ) * qz;
-    url = './maps/' + varName + '/map/' + timeNow + '/' + mapMaxZoom + '/' + parseInt( x / qz ) + '/' + parseInt( y  / qz ) + '.bin.gz';
+    url = './maps' + addName + '/map/' + timeNow + '/' + mapMaxZoom + '/' + parseInt( x / qz ) + '/' + parseInt( y  / qz ) + '.bin.gz';
   }
   else
   {
@@ -577,7 +592,7 @@ function changeMap_(value){
     varName = value;
     selectName = varName;
     var newTimes = parseDates(times[varName]);
-    
+
     // https://stackoverflow.com/questions/8584902/get-closest-number-out-of-array
     var closest = newTimes.reduce(function(prev, curr) {
       return (Math.abs(curr - oldTime) < Math.abs(prev - oldTime) ? curr : prev);
@@ -587,7 +602,7 @@ function changeMap_(value){
       slider.remove(map);
     }
     updateSlider();
-    
+
     controlLayers.remove(map);
     controlLayers.addTo(map);
 
@@ -598,7 +613,7 @@ function changeMap_(value){
     updateURL();
 
     var text = L.DomUtil.create("div", "selectLayer", controlLayers._container.firstChild);
-    text.textContent = 'Index';  
+    text.textContent = 'Index';
   }
 }
 
@@ -616,19 +631,19 @@ var controlLayers;
 
 function updateSlider(){
   if(times[varName].length>1){
-    slider = L.control.slider(function(value) { 
+    slider = L.control.slider(function(value) {
     }, {
       min: 0,
-      max: times[varName].length-1, 
+      max: times[varName].length-1,
       value: timeI,
       step: 1,
       size: '250px',
-      orientation:'horizontal', 
+      orientation:'horizontal',
       id: 'slider',
       logo: 'Time',
       increment:  true,
       getValue: function(value){
-        timeI = value;        
+        timeI = value;
         updateCustomMap();
         if(legend != undefined & typeof legend.remove === "function"){
           legend.remove();
@@ -649,7 +664,7 @@ function init(){
 
  document.getElementById("title").innerHTML = title;
 
- if(!isNaN(map_position)){
+ if(map_position!=null){
   timeI = map_position;
   }
 
@@ -671,8 +686,8 @@ function init(){
 
   var options = {
     controls: [],
-    minZoom: mapMinZoom, 
-    center: center, 
+    minZoom: mapMinZoom,
+    center: center,
     zoom: zoom,
     attributionControl: false
   };
@@ -692,7 +707,7 @@ function init(){
     });
     return droughtOverlayMapAux;
   }
- 
+
   droughtOverlayMap = newDroughtOverlayMap("getURL");
 
   var urlLayer = 'http://{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png';
@@ -700,7 +715,7 @@ function init(){
     zIndex: 1,
     ext: 'png'
   });
-  
+
   var urlLayer = 'http://korona.geog.uni-heidelberg.de/tiles/adminb/x={x}&y={y}&z={z}';
   var googleLabelLayer = L.tileLayerGoogle(urlLayer, {
     attribution: '<a href="info.html">Reference the data</a>' + ' | ' + '<a href="http://stamen.com">Stamen Design</a>' + ' | ' + '<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' + ' | ' + '<a href="http://leafletjs.com">Leaflet</a>',
@@ -720,7 +735,7 @@ function init(){
     ext: 'png',
     zIndex: 14
   });
-  
+
   customMap.addLayer(hyddaBase);
   customMap.addLayer(droughtOverlayMap);
   customMap.addLayer(googleLabelLayer);
@@ -732,17 +747,17 @@ function init(){
 
   var mouseTimeOut;
   var popup;
-  
+
   map.on('mousemove', function(event) {
     // Mostrar valor del punto actual seleccionado
     var mousemoveValue = function(coor){
-      if(coor > -1.E-37){  
+      if(coor > -1.E-37){
         popup = L.popup({autoPan:false,
-          closeButton:false, 
+          closeButton:false,
           autoClose:true,
           className:'custom'
         })
-        .setLatLng(event.latlng) 
+        .setLatLng(event.latlng)
         .setContent("Value " + coor)
         .openOn(map);
       };
@@ -753,17 +768,17 @@ function init(){
     }, 500);
     if(popup != undefined){
       map.closePopup(popup);
-    }          
+    }
   });
 
-  map.on('move', function(event) {  
-    if(times[varName].length>1){ 
+  map.on('move', function(event) {
+    if(times[varName].length>1){
       slider._collapse();
     }
   });
 
   var dblclick = false;
-  map.on('dblclick', function(event) {  
+  map.on('dblclick', function(event) {
     dblclick = true;
     clickPopup.remove();
   });
@@ -777,7 +792,7 @@ function init(){
       if(!dblclick){
         showPopup(event.latlng, true);
       }
-    }, 500);   
+    }, 500);
   }
 
   function showPopup(latlng, update=false) {
@@ -792,7 +807,7 @@ function init(){
           controlCoordinates._update({latlng: latlng});
         }
       }
-      coor = extractCoorZoom(latlng, mapMaxZoom+4, launchPop, true)    
+      coor = extractCoorZoom(latlng, mapMaxZoom+4, launchPop, true)
   }
 
   var returnClickPopUp = function(nothing, options){
@@ -822,30 +837,58 @@ function init(){
 
   map.on('click', showClickPopup);
 
-  map.on("zoomend", function (e) { 
+  map.on("zoomend", function (e) {
     zoom = map.getZoom();
   });
   document.getElementById('map').style.cursor = 'initial';
 
-  function getColor(d) { 
-    return pal2rgb(parseInt(255*(d-varMin[varName][timeI])/(varMax[varName][timeI]-varMin[varName][timeI])));
+  function getColor(d) {
+    if(varMin[varName].length>1){
+      time_i = timeI
+    }else{
+      time_i = 0
+    }
+    return pal2rgb(parseInt(255*(d-varMin[varName][time_i])/(varMax[varName][time_i]-varMin[varName][time_i])));
   }
 
   legend = L.control({position: 'bottomright', alpha: 1.0});
   legend.onAdd = function (map) {
-    var gradesColor = Array.apply(null, Array(nGrades+1)).map(function (_, i) {return parseInt(varMin[varName][timeI]+i*(varMax[varName][timeI]-varMin[varName][timeI])/nGrades);});
-    var div = L.DomUtil.create('div', 'info legend'), grades = gradesColor, labels = [];
-    div.innerHTML += legendTitle[varName] + '<br>'; 
-    // loop through our density intervals and generate a label with a colored square for each interval 
+    if(varMin[varName].length>1){
+      time_i = timeI
+    }else{
+      time_i = 0
+    }
+    var gradesColor = Array.apply(null, Array(nGrades+1)).map(function (_, i) {return parseInt(varMin[varName][time_i]+i*(varMax[varName][time_i]-varMin[varName][time_i])/nGrades);});
+
+    var superdiv = L.DomUtil.create('div', 'superdiv', div);
+
+    // // Add logo 2
+    // var logo = L.DomUtil.create('img', 'img', superdiv);
+    // logo.src = 'images/indecis.jpg';
+    // logo.style.width = '200px';
+    // logo.style.height = '107px';
+    // // Add logo
+    // var logo = L.DomUtil.create('img', 'img', superdiv);
+    // logo.src = 'images/IPE_logo_plano_color_sombra.png';
+    // logo.style.width = '100px';
+    // logo.style.height = '114px';
+
+    var div = L.DomUtil.create('div', 'info legend', superdiv), grades = gradesColor, labels = [];
+    if(legendTitle[varName]!=undefined){
+      div.innerHTML += legendTitle[varName] + '<br>';
+    }else{
+      div.innerHTML += legendTitle.NaN[0] + '<br>';
+    }
+    // loop through our density intervals and generate a label with a colored square for each interval
     for (var i = 0; i < grades.length; i++) {
       div.innerHTML += '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' + grades[i];
       if(grades[i + 1]==undefined){
         div.innerHTML += '+';
       }else{
         div.innerHTML += '&ndash;' + grades[i + 1] + '<br>';
-      } 
-    } 
-    return div;
+      }
+    }
+    return superdiv;
   };
   legend.addTo(map);
 
@@ -873,11 +916,11 @@ function init(){
         for (var f = 0; f < childrenObject[Object.keys(childrenObject)[i]].length; f++) {
           if(childrenObject[Object.keys(childrenObject)[i]][f].length>0){
             var text = '<a onmouseover="showInfo(\'' + childrenObject[Object.keys(childrenObject)[i]][f] + '\')" onmouseout="removeInfo()" onclick="changeMap(\'' + childrenObject[Object.keys(childrenObject)[i]][f] + '\')" href="javascript:void(0);">'+ menuNames[childrenObject[Object.keys(childrenObject)[i]][f]] + '</a>';
-            iVar["children"][f] = {  
+            iVar["children"][f] = {
               label: text,
               name: "Index",
             }
-          }else{  
+          }else{
             iVar["children"][f] = children_label(childrenObject[Object.keys(childrenObject)[i]][f], level + 1);
           }
         }
@@ -895,7 +938,7 @@ function init(){
   if(Object.keys(varNames).length>1){
     baseTree["children"] = children_label(varNames, 0);
     var overalysTree = {
-      name: "Index",    
+      name: "Index",
     }
     var optionsTree = {
       name: "Index",
@@ -907,7 +950,7 @@ function init(){
     text.textContent = 'Index';
   }
 
-  if(!isNaN(varName)){
+  if(varName!=null){
     L.Control.Download = L.Control.extend({
       options: {
         position: 'bottomleft',
@@ -915,9 +958,11 @@ function init(){
       onAdd: function(map) {
         this._map = map;
         var container = this._container = L.DomUtil.create('div', 'map_name');
-        var link = L.DomUtil.create("a", "uiElement label", container);
-        link.href =  "nc/" + varName + ".nc";
-        link.textContent = 'Download NC';
+        if(varName!="NaN"){
+          var link = L.DomUtil.create("a", "uiElement label", container);
+          link.href =  "nc/" + varName + ".nc";
+          link.textContent = 'Download NC';
+        }
         return container;
       },
       onRemove(map){
@@ -927,7 +972,7 @@ function init(){
     controlDownload.addTo(map);
   }
 
-  if(!isNaN(varName)){
+  if(varName!=null){
     L.Control.Names = L.Control.extend({
       options: {
         position: 'bottomleft',
@@ -935,8 +980,9 @@ function init(){
       onAdd: function(map) {
         this._map = map;
         var container = this._container = L.DomUtil.create('div', 'map_name');
-        container.innerHTML = varTitle[varName];
-        
+        if(varName!="NaN"){
+          container.innerHTML = varTitle[varName];
+        }
         // aa=container;
         container.onmouseover = function() { showInfo(); };
         container.onmouseout = function() { removeInfo(); };
@@ -949,7 +995,7 @@ function init(){
     map_control_name = new L.Control.Names();
     map.addControl(map_control_name);
   }
-  
+
   // https://stackoverflow.com/questions/33614912/how-to-locate-leaflet-zoom-control-in-a-desired-position
   L.Control.Info = L.Control.extend({
     options: {
@@ -960,9 +1006,11 @@ function init(){
       var container = this._container = L.DomUtil.create('div', 'map_name');
       container.id = "map_info";
       container.innerHTML = "";
-      for(i = 0; i < generalInformationNames.length; i++) {
-        if(generalInformationNames[i]!="null"){
-          container.innerHTML = container.innerHTML + generalInformationNames[i]  + ":" +  " " + generalInformation[selectName][i] + "</br>";
+      if(generalInformationNames!=undefined & generalInformation!=undefined){
+        for(i = 0; i < generalInformationNames.length; i++) {
+          if(generalInformationNames[i]!="null"){
+            container.innerHTML = container.innerHTML + generalInformationNames[i]  + ":" +  " " + generalInformation[selectName][i] + "</br>";
+          }
         }
       }
       return container;

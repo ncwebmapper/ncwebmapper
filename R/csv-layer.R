@@ -59,7 +59,7 @@ draw_raster_date <- function(nc, date){
 		t <- 1
 	}else{
 		# Ej. date <- "1975-10-20" 
-		t <- which(times.t=date)
+		t <- which(times.t==date)
 	}
 	index <- ncvar_get(nc, nc$var[[1]]$name, c(1, 1, t), c(-1, -1, 1))
 	index <- index[c(nrow:1), ]
