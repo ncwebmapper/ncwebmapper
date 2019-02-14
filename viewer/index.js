@@ -218,7 +218,7 @@ function urlCSV(x){
   f1 = parseInt(x) % 10;
   f2 = parseInt(parseInt(x)/10) % 10;
   f3 = parseInt(parseInt(x)/100) % 10;
-  if(varName==null){
+  if(varName==null | varName=="NaN"){
     addName = ""
   }else{
     addName = "/" + varName
@@ -426,13 +426,13 @@ function getURL(bounds, done, int) {
   }else{
     timeNow = 0;
   }
-  if(varName==null){
+  if(varName==null | varName=="NaN"){
     addName = ""
   }else{
     addName = "/" + varName
   }
   url = './maps' + addName + '/map/' + timeNow + '/' + z + '/' + x + '/' + y + '.bin.gz';
-
+  //console.log(url);
   if(z > mapMaxZoom && !int)
   {
     qz = Math.pow(2, z - mapMaxZoom );
@@ -958,7 +958,7 @@ function init(){
       onAdd: function(map) {
         this._map = map;
         var container = this._container = L.DomUtil.create('div', 'map_name');
-        if(varName!="NaN"){
+        if(varName!=null & varName!="NaN"){
           var link = L.DomUtil.create("a", "uiElement label", container);
           link.href =  "nc/" + varName + ".nc";
           link.textContent = 'Download NC';
@@ -980,7 +980,7 @@ function init(){
       onAdd: function(map) {
         this._map = map;
         var container = this._container = L.DomUtil.create('div', 'map_name');
-        if(varName!="NaN"){
+        if(varName!=null & varName!="NaN"){
           container.innerHTML = varTitle[varName];
         }
         // aa=container;
