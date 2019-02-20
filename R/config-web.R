@@ -55,7 +55,7 @@ library(raster)
 #' @param varmin varmin
 #' @param infoJs infoJs
 #' @param legend legend
-#' @param write write
+#' @param write true si se escribe el fichero js al terminar la ejecución; implica que la web solo muestra un "mapa"; en otro caso se supone que la web tendrá más de un mapa
 #' @export
 config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, lonIni, latEnd, lonEnd, timeIni, timeEnd, varmin, varmax, infoJs = NA, legend="NaN", write=TRUE){
 
@@ -69,7 +69,9 @@ config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, 
     nc <- nc_open(file)
     # nc name
     varName <- basename(gsub(".nc", "", file))
-  }else{
+  }
+
+  if(missing(file) | write){
     varName <- "NaN"
   }
 

@@ -371,7 +371,7 @@ function getURL(bounds, done, int) {
           charView[3] = decompressed[l+3];
           floatArray[k/4] = floatView[0];
 
-          if(floatView[0]==null)
+          if(floatView[0]==null ||  isNaN(floatView[0]))
           {
             // Transparent
             pix[k+3] = 0;
