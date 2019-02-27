@@ -201,17 +201,21 @@ listRtojs_ <- function(value){
     }
     v = names(value[[t]])[1]
     times2 = ""
-    for (v in names(value[[t]])){
-      if(times2!=""){
-        times2 <- paste0(times2, ", ") 
+    if(!is.null(v)){
+      for (v in names(value[[t]])){
+        if(times2!=""){
+          times2 <- paste0(times2, ", ") 
+        }
+        if(length(value[[t]][[v]])>1){
+          text = paste(value[[t]][[v]], collapse=paste0("'", ",", "'"))
+          text = paste0("['", text, "']")
+          times2 <- paste0(times2, "{", "'", v, "'", ":" , " ", text, "}")
+        }else{
+          times2 <- paste0(times2, "'", value[[t]][[v]], "'")
+        }
       }
-      if(length(value[[t]][[v]])>1){
-        text = paste(value[[t]][[v]], collapse=paste0("'", ",", "'"))
-        text = paste0("['", text, "']")
-        times2 <- paste0(times2, "{", "'", v, "'", ":" , " ", text, "}")
-      }else{
-        times2 <- paste0(times2, "'", value[[t]][[v]], "'")
-      }
+    }else{
+      times2 = paste0("'", paste(value[[t]], collapse="', '"), "'")
     }
     times <- paste0(times, "'", t, "'", ":" , " ", "[", times2, "]")
   }

@@ -125,7 +125,7 @@ write_csv <- function(file, folder, epsg, dates, formatdates)
 				table <- array(numeric(), c(ntime, 2))
 				colnames(table) <- c(nc$dim[["time"]]$units, nc$var[[1]]$name)
 				table[,1] <- format(times)
-				table[,2] <- matrix[i,]
+				table[,2] <- signif(matrix[i,], digits = 5)
 				table[table=="NaN"] <- NA
 				# write csv and zip
 				dir <- file.path(folder, "csv", floor(id/100)%%10, floor(id/10)%%10, id%%10)
