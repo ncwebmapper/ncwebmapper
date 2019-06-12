@@ -888,6 +888,7 @@ function init(){
     // loop through our density intervals and generate a label with a colored square for each interval
     for (var i = 0; i < grades.length; i++) {
       div.innerHTML += '<i style="background:' + getColor(grades[i]) + '"></i> ' + grades[i];
+      // div.innerHTML += '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' + grades[i];
       if(grades[i + 1]==undefined){
         div.innerHTML += '+';
       }else{
