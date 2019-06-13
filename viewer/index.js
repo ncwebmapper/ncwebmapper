@@ -463,19 +463,6 @@ function getURL(bounds, done, int) {
   }
 }
 
-function getURL2(bounds) {
-  var emptyTileURL = "http://www.maptiler.org/img/none.png";
-  var x = bounds.x;
-  var y = Math.pow(2, bounds.z) - 1 - bounds.y;
-  var z = bounds.z;
-  var path = './' + z + '/' + x + '/' + y + '.png';
-  if (z >= mapMinZoom) {
-    return path;
-  } else {
-    return emptyTileURL;
-  }
-}
-
 ////////////////////// Sobreescribir algunas funciones de Leaflet
 L.TileLayerGoogle = L.TileLayer.extend({
   getTileUrl: function (coords){
@@ -714,25 +701,15 @@ function init(){
 
   droughtOverlayMap = newDroughtOverlayMap("getURL");
 
-  var urlLayer = 'http://{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png';
+  var urlLayer = window.location.protocol + '//{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png';
   hyddaBase = L.tileLayerGoogle(urlLayer, {
     zIndex: 1,
     ext: 'png'
   });
 
-  var urlLayer = 'http://korona.geog.uni-heidelberg.de/tiles/adminb/x={x}&y={y}&z={z}';
-  var googleLabelLayer = L.tileLayerGoogle(urlLayer, {
-    attribution: '<a href="info.html">Reference the data</a>' + ' | ' + '<a href="http://stamen.com">Stamen Design</a>' + ' | ' + '<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' + ' | ' + '<a href="http://leafletjs.com">Leaflet</a>',
-    subdomains: 'abcd',
-    minZoom: 0,
-    maxZoom: 20,
-    ext: 'png',
-    zIndex: 10
-  });
-
-  var urlLayer = 'http://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}.{ext}';
+  var urlLayer = window.location.protocol + '//stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}.{ext}';
   var googleLabelLayer2 = L.tileLayerGoogle(urlLayer, {
-    // attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    attribution: '<a href="info.html">Reference the data</a>' + ' | ' + '<a href="http://stamen.com">Stamen Design</a>' + ' | ' + '<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' + ' | ' + '<a href="http://leafletjs.com">Leaflet</a>',
     subdomains: 'abcd',
     minZoom: 0,
     maxZoom: 20,
@@ -742,7 +719,6 @@ function init(){
 
   customMap.addLayer(hyddaBase);
   customMap.addLayer(droughtOverlayMap);
-  customMap.addLayer(googleLabelLayer);
   customMap.addLayer(googleLabelLayer2);
 
   customMap.addTo(map);
