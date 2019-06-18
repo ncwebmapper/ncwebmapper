@@ -82,3 +82,7 @@ a.leaflet-control-slider-toggle{
 .superdiv{
   display: inline-flex;
 }
+
+.leaflet-bottom{
+  z-index: 999;
+}
