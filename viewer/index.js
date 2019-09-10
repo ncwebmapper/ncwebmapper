@@ -15,12 +15,37 @@ var palrgb = ["#FFFFFF", "#FFFFFD", "#FFFFFC", "#FFFFFA", "#FFFFF9", "#FFFFF8", 
 // Map config
 var nGrades = 9;
 
+//////////////////////////PARÁMETROS//////////////////////////
+
+/* Actualiza la URL con los parámetros que definen el mapa a cargar */
+function updateURL(){
+    var myURL = location.protocol + '//' + location.host + location.pathname;
+    document.location = myURL + "#map_name=" + varName + "#map_position=" + timeI;
+};
+
+/* Leer parámetros URL con #
+http://stackoverflow.com/questions/19491336/get-url-parameter-jquery-or-how-to-get-query-string-values-in-js */
+var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location),
+        sURLVariables = sPageURL.split('#'),
+        sParameterName,
+        i;
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0] === sParam) {
+          return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+    }
+};
+
 ////////////////////////////////////////////////////
 
 function getTimeI(){
   return times[varName].length-1;
 }
 
+var map_position = parseInt(getUrlParameter("map_position"));
+var map_name = getUrlParameter("map_name");
 if(Object.keys(varTitle).length>0){
   var varName = defaultVarName;
 }else{
@@ -45,32 +70,6 @@ function makeArray(count, content) {
    }
    return result;
 }
-
-//////////////////////////PARÁMETROS//////////////////////////
-
-/* Actualiza la URL con los parámetros que deficnen el mapa a cargar */
-function updateURL(){
-    var myURL = location.protocol + '//' + location.host + location.pathname;
-    document.location = myURL + "#map_name=" + varName + "#map_position=" + timeI;
-};
-
-/* Leer parámetros URL con #
-http://stackoverflow.com/questions/19491336/get-url-parameter-jquery-or-how-to-get-query-string-values-in-js */
-var getUrlParameter = function getUrlParameter(sParam) {
-    var sPageURL = decodeURIComponent(window.location),
-        sURLVariables = sPageURL.split('#'),
-        sParameterName,
-        i;
-    for (i = 0; i < sURLVariables.length; i++) {
-        sParameterName = sURLVariables[i].split('=');
-        if (sParameterName[0] === sParam) {
-          return sParameterName[1] === undefined ? true : sParameterName[1];
-        }
-    }
-};
-
-var map_position = parseInt(getUrlParameter("map_position"));
-var map_name = getUrlParameter("map_name");
 
 ////////////////////////////////////////////////////////
 
@@ -656,7 +655,7 @@ function init(){
 
  document.getElementById("title").innerHTML = title;
 
- if(map_position!=null){
+ if(map_position!=null & !isNaN(map_position)){
   timeI = map_position;
   }
 
@@ -991,9 +990,30 @@ function init(){
       container.id = "map_info";
       container.innerHTML = "";
       if(generalInformationNames!=undefined & generalInformation!=undefined){
-        for(i = 0; i < generalInformationNames.length; i++) {
-          if(generalInformationNames[i]!="null"){
-            container.innerHTML = container.innerHTML + generalInformationNames[i]  + ":" +  " " + generalInformation[selectName][i] + "</br>";
+        for(generalInformationI = 0; generalInformationI < generalInformationNames.length; generalInformationI++) {
+          if(generalInformationNames[generalInformationI]!="null" &  generalInformation[selectName][generalInformationI]!="NA"){
+            container.innerHTML = container.innerHTML + generalInformationNames[generalInformationI]  + ":" +  " ";
+            var str = generalInformation[selectName][generalInformationI];
+            str = str.replace( /(.*) \\url\{(.*)\}(.*)/, '$1 <a href="$2">$2</a>$3' )
+            str = str.split("\\deqn{");
+
+            for(i = 0; i < str.length; i++) {
+              str[i] = str[i].split("}");
+              var stri = "";
+              for(f = 0; f < str[i].length-1; f++){
+                if(stri!=""){
+                  stri =  stri + "}"
+                }
+                stri =  stri + str[i][f]
+              }
+              if(stri!=""){
+                stri = MathJax.tex2mml(stri)
+              }
+              str[i] = stri + str[i][str[i].length-1]
+              container.innerHTML = container.innerHTML + str[i];
+            }
+            
+            container.innerHTML = container.innerHTML + "</br>";
           }
         }
       }

@@ -138,9 +138,12 @@ config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, 
   }
   # Delete Inf
   aux = varmin == Inf | varmin == -Inf | varmax == Inf | varmax == -Inf
-  infoJs$varmin[[varName]] = varmin[!aux]
-  infoJs$varmax[[varName]] = varmax[!aux]
-  infoJs$times[[varName]] <- times.write[!aux]
+
+  varmin[aux] = 0
+  varmax[aux] = 100
+  infoJs$varmin[[varName]] = varmin
+  infoJs$varmax[[varName]] = varmax
+  infoJs$times[[varName]] <- times.write
 
   # estimate maximum zoom level
   if(missing(maxzoom))
@@ -234,11 +237,13 @@ listRtojs <- function(name, value){
   return(times.write)
 }
 
-generaltojs <- function(name, value){
+generaltojs <- function(name, value.ori){
+  max <- dim(value.ori)[1]
   times <- ""
 
-  i <- 1
-  for (i in 1:dim(value)[1]){
+  value <-  gsub("\\", "\\\\", value.ori, fixed=TRUE)
+  value <-  gsub("'", "\\'", value, fixed=TRUE)
+  for (i in 1:max){
     if(times!=""){
       times <- paste0(times, ", ") 
     }
@@ -312,15 +317,15 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
 
   text.js <- paste(text.js, listRtojs(name="varNames", value=varNames))
   text.js <- paste(text.js, arrayRtojs(name="varTitle", value=varTitle))
-
-  if(class(legendTitle)=="list"){
+  # if(class(legendTitle)=="list"){ # Fallaba cuando legendTitle era un array
+  if(length(legendTitle)>1){
     text.js <- paste(text.js, arrayRtojs(name="legendTitle", value=legendTitle))
   }else{
     text.js <- paste(text.js, paste0("var legendTitle = {NaN:['", legendTitle, "']};\n"))
   }
   text.js <- paste(text.js, arrayRtojs(name="menuNames", value=menuNames))
   if(!missing(generalInformation)){
-    text.js <- paste(text.js, generaltojs(name="generalInformation", value=generalInformation))
+    text.js <- paste(text.js, generaltojs(name="generalInformation", value.ori=generalInformation))
   }else{
     text.js <- paste(text.js, paste0("var generalInformation = ", "undefined", ";\n"))
   }
