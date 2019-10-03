@@ -308,12 +308,16 @@ function showInfo(value) {
   if(value!=undefined){
     selectName = value;
   }
-  map.addControl(map_control_info);
+  if(map_control_info!=undefined){
+    map.addControl(map_control_info);
+  }
 };
 
 function removeInfo() {
   selectName = varName;
-  map.removeControl(map_control_info);
+  if(map_control_info!=undefined){
+    map.removeControl(map_control_info);
+  }
 };
 
 function getURL(bounds, done, int) {
@@ -598,7 +602,7 @@ function changeMap_(value){
     controlLayers.addTo(map);
 
     map_control_name._container.innerHTML = varTitle[value];
-    controlDownload._container.firstChild.href =  "nc/" + varName + ".nc";
+    controlDownload._container.firstChild.href =  "nc/" + varName + "." + extensionDownloadFile;
 
     updateCustomMap();
     updateURL();
@@ -918,8 +922,30 @@ function init(){
     return topVar;
   };
 
+  // https://jjimenezshaw.github.io/Leaflet.Control.Layers.Tree/examples/options.html
+  function children_label_array(childrenObject, level){
+    var cycle = L.tileLayer('', "");
+    var topVar = [];
+    //var text = "prueba";
+    for (var i = 0; i < Object.keys(childrenObject).length; i++) {
+      var text = '<a onmouseover="showInfo(\'' + childrenObject[Object.keys(childrenObject)[i]] + '\')" onmouseout="removeInfo()" onclick="changeMap(\'' + childrenObject[Object.keys(childrenObject)[i]] + '\')" href="javascript:void(0);">'+ menuNames[childrenObject[Object.keys(childrenObject)[i]]] + '</a>';
+      var iVar = {
+          label: text,
+          children: []
+        };
+      topVar[i] = iVar;  
+    }
+    return topVar;
+  };
+
   if(Object.keys(varNames).length>1){
-    baseTree["children"] = children_label(varNames, 0);
+    //childrenObject=varNames={Menu1:[{SubMenu1:["lai","pcp","soil_def","tmin"]}],Menu2:[{SubMenu1:["et","npp2","pet","tmax","pet"]}]}
+    //childrenObject=varNames=["lai","pcp","soil_def","tmin", "et","npp2","pet","tmax","pet"]
+    if(typeof varNames[Object.keys(varNames)[0]] == "object"){
+      baseTree["children"] = children_label(varNames, 0);
+    }else{
+      baseTree["children"] = children_label_array(varNames, 0);
+    }
     var overalysTree = {
       name: indexText,
     }
@@ -927,7 +953,7 @@ function init(){
       name: indexText,
     };
     controlLayers = L.control.layers.tree(baseTree, overalysTree, optionsTree)
-    controlLayers.addTo(map);
+    controlLayers.addTo(map); //controlLayers.remove()
     controlLayers.collapseTree();
     var text = L.DomUtil.create("div", "selectLayer", controlLayers._container.firstChild);
     text.textContent = indexText;
@@ -943,7 +969,7 @@ function init(){
         var container = this._container = L.DomUtil.create('div', 'map_name');
         if(varName!=null & varName!="NaN"){
           var link = L.DomUtil.create("a", "uiElement label", container);
-          link.href =  "nc/" + varName + ".nc";
+          link.href =  "nc/" + varName + "." + extensionDownloadFile;
           link.textContent = 'Download NC';
         }
         return container;
@@ -1023,7 +1049,11 @@ function init(){
     }
   });
 
-  map_control_info = new L.Control.Info();
+  if(generalInformationNames!=undefined & generalInformation!=undefined){
+    map_control_info = new L.Control.Info();
+  }else{
+    map_control_info = undefined;
+  }
 
   popupGraph = L.popup({
     autoClose:false

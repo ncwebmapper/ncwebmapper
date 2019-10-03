@@ -203,3 +203,40 @@ readMinMax <- function(nc){
   }
   return(minMax)
 }
+
+#' merge min arrays
+#' @param min1 min1
+#' @param min2 min2
+#' @param positions positions
+#' @return min
+minFusion <- function(min1, min2, positions){
+  if(length(min1)<length(min2)){
+    min.new <- min2
+  }else{
+    min.new <- min1
+  }
+  i <- 1
+  for(i in positions){
+    min.new[i] <- min(min1[i], min2[i], na.rm = TRUE)
+  }
+  return(min.new)
+}
+
+#' merge max arrays
+#' @param max1 max1
+#' @param max2 max2
+#' @param positions positions
+#' @return max
+maxFusion <- function(max1, max2, positions){
+  if(length(max1)<length(max2)){
+    max.new <- max2
+  }else{
+    max.new <- max1
+  }
+  i <- 1
+  for(i in positions){
+    max.new[i] <- max(max1[i], max2[i], na.rm = TRUE)
+  }
+  return(max.new)
+}
+

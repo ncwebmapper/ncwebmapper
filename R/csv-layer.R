@@ -138,7 +138,7 @@ write_csv_layer <- function(file, folder, epsg, zoom)
 	{
 		zoom <- readMaxZoom(r.crs)
 	}
-
+	
 	# increase resolution 16 times (2^4)
 	zoom <- zoom + 4
 

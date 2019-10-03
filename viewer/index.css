@@ -19,6 +19,9 @@ html, body, #map { height: 100%; width: 100%; }
    border-radius: 5px;
 }
 
+.info.legend {
+  min-width: 90px;
+}
 .legend i {
    width: 20px;
    height: 20px;

@@ -129,7 +129,8 @@ write_csv <- function(file, folder, epsg, dates, formatdates)
 				table[table=="NaN"] <- NA
 				# write csv and zip
 				dir <- file.path(folder, "csv", floor(id/100)%%10, floor(id/10)%%10, id%%10)
-				zip.file <- file.path(paste0(id, ".zip"))
+				# zip.file <- file.path(paste0(id, ".zip"))
+				zip.file <- trimws(sprintf("%10d%s", id, ".zip"))
 				file <- file.path(paste0(coords[id,1], "_", coords[id,2], ".csv"))
 				write.table(table, file=file, row.names=FALSE, sep=";", dec=",", quote=FALSE) #sep=",", dec=".")
 				if (file.exists(zip.file)) file.remove(zip.file)
@@ -137,7 +138,8 @@ write_csv <- function(file, folder, epsg, dates, formatdates)
 				file.remove(file)
 				file.rename(zip.file, file.path(dir, zip.file))
 				# set progress bar
-				setTxtProgressBar(pb, (i + j * ncol) / (ncol * nrow))				
+				setTxtProgressBar(pb, (i + j * ncol) / (ncol * nrow))			
+				print(paste(i, j, id, zip.file))	 #305 128 
 			}
 			# increase point id
 			id <- id + 1

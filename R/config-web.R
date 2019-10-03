@@ -55,9 +55,10 @@ library(raster)
 #' @param varmin varmin
 #' @param infoJs infoJs
 #' @param legend legend
+#' @param varName varName
 #' @param write true si se escribe el fichero js al terminar la ejecución; implica que la web solo muestra un "mapa"; en otro caso se supone que la web tendrá más de un mapa
 #' @export
-config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, lonIni, latEnd, lonEnd, timeIni, timeEnd, varmin, varmax, infoJs = NA, legend="NaN", write=TRUE){
+config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, lonIni, latEnd, lonEnd, timeIni, timeEnd, varmin, varmax, varName, infoJs = NA, legend="NaN", write=TRUE){
 
   if(missing(infoJs) || sum(!is.na(infoJs))==0)
   {
@@ -67,12 +68,16 @@ config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, 
   if(!missing(file)){
     # open nc
     nc <- nc_open(file)
-    # nc name
-    varName <- basename(gsub(".nc", "", file))
   }
 
-  if(missing(file) | write){
-    varName <- "NaN"
+  if(missing(varName)){
+    if(!missing(file)){
+      # nc name
+      varName <- basename(gsub(".nc", "", file))
+    }
+    if(missing(file) | write){
+      varName <- "NaN"
+    }
   }
 
   # read epsg
@@ -98,6 +103,14 @@ config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, 
     lonIni <- min(coords[, "lon"])
     lonEnd <- max(coords[, "lon"])
   }
+
+  if(!is.na(infoJs$latIni) & !is.na(infoJs$latEnd) & !is.na(infoJs$lonIni) & !is.na(infoJs$lonEnd)){
+    latIni <- min(latIni, infoJs$latIni)
+    latEnd <- max(latEnd, infoJs$latEnd)
+    lonIni <- min(lonIni, infoJs$lonIni)
+    lonEnd <- max(lonEnd, infoJs$lonEnd)
+  }
+
   infoJs$latIni <- latIni
   infoJs$latEnd <- latEnd
   infoJs$lonIni <- lonIni
@@ -141,6 +154,20 @@ config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, 
 
   varmin[aux] = 0
   varmax[aux] = 100
+  positions = 1:length(varmin)
+
+  if(!is.null(infoJs$times[[varName]])){
+    if(length(times.write)==sum(times.write%in%infoJs$times[[varName]])){
+      positions = match(times.write, infoJs$times[[varName]])
+      times.write = infoJs$times[[varName]]
+    }
+  }
+
+  if(!is.null(infoJs$varmin[[varName]]) & !is.null(infoJs$varmax[[varName]])){
+    varmin = minFusion(min1=varmin, min2=infoJs$varmin[[varName]], positions=positions)
+    varmax = maxFusion(varmax, infoJs$varmax[[varName]], positions)
+  }
+
   infoJs$varmin[[varName]] = varmin
   infoJs$varmax[[varName]] = varmax
   infoJs$times[[varName]] <- times.write
@@ -161,6 +188,11 @@ config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, 
 
   if(write){
     writeJs(folder, infoJs)
+  }
+
+  if(!missing(file)){
+    # open nc
+    nc_close(nc)
   }
 
   return(infoJs)
@@ -264,9 +296,10 @@ generaltojs <- function(name, value.ori){
 #' @param menuNames menuNames
 #' @param generalInformation generalInformation
 #' @param generalInformationNames generalInformationNames
+#' @param extensionDownloadFile extensionDownloadFile
 #' @param title title
 #' @return None
-writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, generalInformation, generalInformationNames, title="Map web"){
+writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, generalInformation, generalInformationNames, extensionDownloadFile = "nc", title="Map web"){
   file <-  file.path(folder, "times.js")
 
   if(missing(varTitle)){
@@ -282,7 +315,7 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
     # Ej. 
     # varNames = list("Temperature-based"=list("cd"=c("cd_month", "cd_season", "cd_year"), "gtx"=c("gtx_year"), "ptg"=c("ptg_year")), "Precipitation-based"=list("mfi"=c("mfi_year")), "Bioclimatic"=list("bio4" = c("bio4_year"), "bio5" = c("bio5_year")))
     if(length(infoJs$varmin)>1){
-     varNames = list("Menu1"=list("SubMenu1"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)==0]), "Menu2"=list("SubMenu1"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)!=0]))
+      varNames = list("Menu1"=list("SubMenu1"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)==0]), "Menu2"=list("SubMenu1"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)!=0]))
     }else{
       varNames = names(infoJs$varmin)
     }
@@ -314,8 +347,11 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
   text.js <- paste(text.js, paste0("var levelcsv = ", infoJs$levelCsv, ";\n"))
   
   text.js <- paste(text.js, paste0("var title = '", title, "';\n"))
-
-  text.js <- paste(text.js, listRtojs(name="varNames", value=varNames))
+  if(class(varNames)!="character"){
+    text.js <- paste(text.js, listRtojs(name="varNames", value=varNames))
+  }else{
+    text.js <- paste(text.js, paste0("var varNames = ", "[", "'", paste(varNames, collapse="', '"), "'", "]", ";\n"))
+  }
   text.js <- paste(text.js, arrayRtojs(name="varTitle", value=varTitle))
   # if(class(legendTitle)=="list"){ # Fallaba cuando legendTitle era un array
   if(length(legendTitle)>1){
@@ -334,6 +370,7 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
   }else{
     text.js <- paste(text.js, paste0("var generalInformationNames = ", "undefined", ";\n"))
   }
+  text.js <- paste(text.js, paste0("var extensionDownloadFile = '", extensionDownloadFile, "';\n"))
   text.js <- uglify_optimize(text.js)
 
   write(text.js, file=file, append = FALSE)
