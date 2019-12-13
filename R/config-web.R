@@ -224,48 +224,15 @@ arrayRtojs <- function(name, value, type="character"){
 }
 
 #' 
-#' @param value value
-#' @return None
-#' "Temperature-based":["bio4_year", {"cd":["cd_month","cd_season","cd_year"]}, "bio5_year"],"Bioclimatic":["bio4_year", "bio5_year"]
-listRtojs_ <- function(value){
-  times = ""
-  t = names(value)[1]
-  for (t in names(value)){
-    if(times!=""){
-      times <- paste0(times, ", ") 
-    }
-    v = names(value[[t]])[1]
-    times2 = ""
-    if(!is.null(v)){
-      for (v in names(value[[t]])){
-        if(times2!=""){
-          times2 <- paste0(times2, ", ") 
-        }
-        if(length(value[[t]][[v]])>1){
-          text = paste(value[[t]][[v]], collapse=paste0("'", ",", "'"))
-          text = paste0("['", text, "']")
-          times2 <- paste0(times2, "{", "'", v, "'", ":" , " ", text, "}")
-        }else{
-          times2 <- paste0(times2, "'", value[[t]][[v]], "'")
-        }
-      }
-    }else{
-      times2 = paste0("'", paste(value[[t]], collapse="', '"), "'")
-    }
-    times <- paste0(times, "'", t, "'", ":" , " ", "[", times2, "]")
-  }
-  return(times)
-}
-
-#' 
 #' @param name name
 #' @param value value
 #' @return None
 #' varNames={"Temperature-based":["bio5_year"], "cd":["cd_month", "cd_season", "cd_year"]};
 #' varNames={"Temperature-based":["bio4_year", {"cd":["cd_month","cd_season","cd_year"]}, "bio5_year"],"Bioclimatic":["bio4_year", "bio5_year"]};
 listRtojs <- function(name, value){
-  times <- listRtojs_(value)
-  times.write <- paste0("var ", name, " = {", times, "};\n")
+  library(jsonlite)
+  times <- toJSON(value)
+  times.write <- paste0("var ", name, " = ", times, ";\n")
   return(times.write)
 }
 
@@ -277,13 +244,14 @@ generaltojs <- function(name, value.ori){
   value <-  gsub("'", "\\'", value, fixed=TRUE)
   for (i in 1:max){
     if(times!=""){
-      times <- paste0(times, ", ") 
+      times <- paste0(times, ", ")
     }
     text <- paste0("'", paste(value[i, ], collapse="', '"), "'")
     times <- paste0(times, rownames(value)[i], ":", " ", "[", text, "]")
   }
 
   times.write <- paste0("var ", name, " = {", times, "};\n")
+  # uglify_optimize(times.write)
   return(times.write)
 }
 
@@ -298,8 +266,9 @@ generaltojs <- function(name, value.ori){
 #' @param generalInformationNames generalInformationNames
 #' @param extensionDownloadFile extensionDownloadFile
 #' @param title title
-#' @return None
-writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, generalInformation, generalInformationNames, extensionDownloadFile = "nc", title="Map web"){
+#' @param showDonwloadCoordinates show CSV download menu and graph display
+#' @return text written in the file 
+writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, generalInformation, generalInformationNames, extensionDownloadFile = "nc", title="Map web", showDonwloadCoordinates=TRUE){
   file <-  file.path(folder, "times.js")
 
   if(missing(varTitle)){
@@ -337,6 +306,7 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
   text.js <- paste(text.js, lat_lon.write)
  
   text.js <- paste(text.js, arrayRtojs(name="times", value=infoJs$times))
+  text.js <- paste0(text.js, " var showDonwloadCoordinates = ", tolower(showDonwloadCoordinates), ";\n")
 
   # Niveles de zoom
   text.js <- paste(text.js, paste0("var mapMinZoom = ", infoJs$mapMinZoom, ";\n"))
@@ -359,12 +329,13 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
   }else{
     text.js <- paste(text.js, paste0("var legendTitle = {NaN:['", legendTitle, "']};\n"))
   }
-  text.js <- paste(text.js, arrayRtojs(name="menuNames", value=menuNames))
+  text.js <- paste(text.js, arrayRtojs(name="menuNames", value=menuNames)) 
+  ####
   if(!missing(generalInformation)){
     text.js <- paste(text.js, generaltojs(name="generalInformation", value.ori=generalInformation))
   }else{
     text.js <- paste(text.js, paste0("var generalInformation = ", "undefined", ";\n"))
-  }
+  }####
   if(!missing(generalInformationNames)){
     text.js <- paste(text.js, paste0("var generalInformationNames = ", "[", "'", paste(generalInformationNames, collapse="', '"), "'", "]", ";\n"))
   }else{
@@ -374,5 +345,6 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
   text.js <- uglify_optimize(text.js)
 
   write(text.js, file=file, append = FALSE)
+  return(text.js)
 }
 

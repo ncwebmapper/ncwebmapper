@@ -139,7 +139,7 @@ write_csv <- function(file, folder, epsg, dates, formatdates)
 				file.rename(zip.file, file.path(dir, zip.file))
 				# set progress bar
 				setTxtProgressBar(pb, (i + j * ncol) / (ncol * nrow))			
-				print(paste(i, j, id, zip.file))	 #305 128 
+				# print(paste(i, j, id, zip.file))	 #305 128 
 			}
 			# increase point id
 			id <- id + 1

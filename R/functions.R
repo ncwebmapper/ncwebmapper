@@ -103,7 +103,9 @@ read_times <- function(nc, formatdates)
     times <- nc$dim[["time"]]$vals
     units <- strsplit(nc$dim[["time"]]$units, " ")[[1]]
     origin <- as.Date(units[which(units=="since")+1]) #length(units)
-    times <- as.Date(times, origin=origin)
+    if(length(origin)>0){
+      times <- as.Date(times, origin=origin)
+    }
     if(!missing(formatdates)){
       times <- format(times, formatdates)
     }

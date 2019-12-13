@@ -9,11 +9,17 @@ var dateText = "Date";
 var errorText = "Please, select a point with data";
 var defaultVarName = Object.keys(varTitle)[0]; // Id of the variable to be displayed by default
 
-var palrgb = ["#FFFFFF", "#FFFFFD", "#FFFFFC", "#FFFFFA", "#FFFFF9", "#FFFFF8", "#FFFFF6", "#FFFFF5", "#FFFFF4", "#FFFFF2", "#FFFFF1", "#FFFFF0", "#FFFFEE", "#FFFFED", "#FFFFEC", "#FFFFEA", "#FFFFE9", "#FFFFE8", "#FFFFE6", "#FFFFE5", "#FFFFE4", "#FFFFE2", "#FFFFE1", "#FFFFE0", "#FFFFDE", "#FFFFDD", "#FFFFDC", "#FFFFDA", "#FFFFD9", "#FEFED8", "#FDFED6", "#FDFED5", "#FCFED3", "#FCFDD2", "#FBFDD1", "#FAFDCF", "#FAFDCE", "#F9FCCC", "#F8FCCB", "#F8FCC9", "#F7FCC8", "#F6FBC7", "#F6FBC5", "#F5FBC4", "#F5FBC2", "#F4FAC1", "#F3FAC0", "#F3FABE", "#F2FABD", "#F1F9BB", "#F1F9BA", "#F0F9B9", "#EFF9B7", "#EFF8B6", "#EEF8B4", "#EEF8B3", "#EDF8B1", "#ECF7B1", "#EBF7B1", "#E9F6B1", "#E8F6B1", "#E7F5B1", "#E5F5B1", "#E4F4B1", "#E3F4B1", "#E1F3B1", "#E0F3B1", "#DFF2B2", "#DDF2B2", "#DCF1B2", "#DBF0B2", "#D9F0B2", "#D8EFB2", "#D7EFB2", "#D5EEB2", "#D4EEB2", "#D3EDB3", "#D1EDB3", "#D0ECB3", "#CFECB3", "#CDEBB3", "#CCEBB3", "#CBEAB3", "#C9EAB3", "#C8E9B3", "#C7E9B4", "#C4E8B4", "#C1E7B4", "#BFE6B4", "#BCE5B4", "#BAE4B5", "#B7E3B5", "#B5E2B5", "#B2E1B5", "#B0E0B6", "#ADDFB6", "#ABDEB6", "#A8DDB6", "#A5DCB7", "#A3DBB7", "#A0DAB7", "#9ED9B7", "#9BD8B8", "#99D7B8", "#96D6B8", "#94D5B8", "#91D4B9", "#8FD3B9", "#8CD2B9", "#8AD1B9", "#87D0BA", "#84CFBA", "#82CEBA", "#7FCDBA", "#7DCCBB", "#7BCBBB", "#79CABB", "#76CABC", "#74C9BC", "#72C8BC", "#70C7BD", "#6EC6BD", "#6CC5BD", "#69C5BE", "#67C4BE", "#65C3BE", "#63C2BF", "#61C1BF", "#5EC1BF", "#5CC0BF", "#5ABFC0", "#58BEC0", "#56BDC0", "#53BDC1", "#51BCC1", "#4FBBC1", "#4DBAC2", "#4BB9C2", "#49B8C2", "#46B8C3", "#44B7C3", "#42B6C3", "#40B5C3", "#3FB4C3", "#3EB2C3", "#3CB1C3", "#3BB0C3", "#3AAFC3", "#38ADC3", "#37ACC2", "#36ABC2", "#35A9C2", "#33A8C2", "#32A7C2", "#31A5C2", "#30A4C2", "#2EA3C1", "#2DA1C1", "#2CA0C1", "#2A9FC1", "#299EC1", "#289CC1", "#279BC1", "#259AC0", "#2498C0", "#2397C0", "#2296C0", "#2094C0", "#1F93C0", "#1E92C0", "#1D91C0", "#1D8FBF", "#1D8DBE", "#1D8BBD", "#1D89BC", "#1D87BB", "#1E86BA", "#1E84BA", "#1E82B9", "#1E80B8", "#1E7FB7", "#1E7DB6", "#1F7BB5", "#1F79B4", "#1F77B4", "#1F75B3", "#1F74B2", "#2072B1", "#2070B0", "#206EAF", "#206CAF", "#206BAE", "#2069AD", "#2167AC", "#2165AB", "#2163AA", "#2162A9", "#2160A9", "#215EA8", "#225DA7", "#225BA6", "#225AA6", "#2258A5", "#2257A4", "#2255A3", "#2254A3", "#2252A2", "#2251A1", "#234FA1", "#234EA0", "#234C9F", "#234B9F", "#23499E", "#23489D", "#23469C", "#23459C", "#23439B", "#23429A", "#24409A", "#243F99", "#243D98", "#243C98", "#243A97", "#243996", "#243795", "#243695", "#243494", "#243393", "#233291", "#22328F", "#21318C", "#20308A", "#1F2F88", "#1E2E86", "#1D2E84", "#1C2D82", "#1B2C80", "#1A2B7E", "#192A7B", "#182979", "#172977", "#162875", "#152773", "#142671", "#13256F", "#12256D", "#11246B", "#102368", "#0F2266", "#0E2164", "#0D2162", "#0C2060", "#0B1F5E", "#0A1E5C", "#091D5A", "#081D58"];
-//palrgb = palrgb.reverse(); //Reverse colors
+if(typeof palrgb == "undefined"){
+  function palrgb(varName){
+    var palrgbArray = ["#FFFFFF", "#FFFFFD", "#FFFFFC", "#FFFFFA", "#FFFFF9", "#FFFFF8", "#FFFFF6", "#FFFFF5", "#FFFFF4", "#FFFFF2", "#FFFFF1", "#FFFFF0", "#FFFFEE", "#FFFFED", "#FFFFEC", "#FFFFEA", "#FFFFE9", "#FFFFE8", "#FFFFE6", "#FFFFE5", "#FFFFE4", "#FFFFE2", "#FFFFE1", "#FFFFE0", "#FFFFDE", "#FFFFDD", "#FFFFDC", "#FFFFDA", "#FFFFD9", "#FEFED8", "#FDFED6", "#FDFED5", "#FCFED3", "#FCFDD2", "#FBFDD1", "#FAFDCF", "#FAFDCE", "#F9FCCC", "#F8FCCB", "#F8FCC9", "#F7FCC8", "#F6FBC7", "#F6FBC5", "#F5FBC4", "#F5FBC2", "#F4FAC1", "#F3FAC0", "#F3FABE", "#F2FABD", "#F1F9BB", "#F1F9BA", "#F0F9B9", "#EFF9B7", "#EFF8B6", "#EEF8B4", "#EEF8B3", "#EDF8B1", "#ECF7B1", "#EBF7B1", "#E9F6B1", "#E8F6B1", "#E7F5B1", "#E5F5B1", "#E4F4B1", "#E3F4B1", "#E1F3B1", "#E0F3B1", "#DFF2B2", "#DDF2B2", "#DCF1B2", "#DBF0B2", "#D9F0B2", "#D8EFB2", "#D7EFB2", "#D5EEB2", "#D4EEB2", "#D3EDB3", "#D1EDB3", "#D0ECB3", "#CFECB3", "#CDEBB3", "#CCEBB3", "#CBEAB3", "#C9EAB3", "#C8E9B3", "#C7E9B4", "#C4E8B4", "#C1E7B4", "#BFE6B4", "#BCE5B4", "#BAE4B5", "#B7E3B5", "#B5E2B5", "#B2E1B5", "#B0E0B6", "#ADDFB6", "#ABDEB6", "#A8DDB6", "#A5DCB7", "#A3DBB7", "#A0DAB7", "#9ED9B7", "#9BD8B8", "#99D7B8", "#96D6B8", "#94D5B8", "#91D4B9", "#8FD3B9", "#8CD2B9", "#8AD1B9", "#87D0BA", "#84CFBA", "#82CEBA", "#7FCDBA", "#7DCCBB", "#7BCBBB", "#79CABB", "#76CABC", "#74C9BC", "#72C8BC", "#70C7BD", "#6EC6BD", "#6CC5BD", "#69C5BE", "#67C4BE", "#65C3BE", "#63C2BF", "#61C1BF", "#5EC1BF", "#5CC0BF", "#5ABFC0", "#58BEC0", "#56BDC0", "#53BDC1", "#51BCC1", "#4FBBC1", "#4DBAC2", "#4BB9C2", "#49B8C2", "#46B8C3", "#44B7C3", "#42B6C3", "#40B5C3", "#3FB4C3", "#3EB2C3", "#3CB1C3", "#3BB0C3", "#3AAFC3", "#38ADC3", "#37ACC2", "#36ABC2", "#35A9C2", "#33A8C2", "#32A7C2", "#31A5C2", "#30A4C2", "#2EA3C1", "#2DA1C1", "#2CA0C1", "#2A9FC1", "#299EC1", "#289CC1", "#279BC1", "#259AC0", "#2498C0", "#2397C0", "#2296C0", "#2094C0", "#1F93C0", "#1E92C0", "#1D91C0", "#1D8FBF", "#1D8DBE", "#1D8BBD", "#1D89BC", "#1D87BB", "#1E86BA", "#1E84BA", "#1E82B9", "#1E80B8", "#1E7FB7", "#1E7DB6", "#1F7BB5", "#1F79B4", "#1F77B4", "#1F75B3", "#1F74B2", "#2072B1", "#2070B0", "#206EAF", "#206CAF", "#206BAE", "#2069AD", "#2167AC", "#2165AB", "#2163AA", "#2162A9", "#2160A9", "#215EA8", "#225DA7", "#225BA6", "#225AA6", "#2258A5", "#2257A4", "#2255A3", "#2254A3", "#2252A2", "#2251A1", "#234FA1", "#234EA0", "#234C9F", "#234B9F", "#23499E", "#23489D", "#23469C", "#23459C", "#23439B", "#23429A", "#24409A", "#243F99", "#243D98", "#243C98", "#243A97", "#243996", "#243795", "#243695", "#243494", "#243393", "#233291", "#22328F", "#21318C", "#20308A", "#1F2F88", "#1E2E86", "#1D2E84", "#1C2D82", "#1B2C80", "#1A2B7E", "#192A7B", "#182979", "#172977", "#162875", "#152773", "#142671", "#13256F", "#12256D", "#11246B", "#102368", "#0F2266", "#0E2164", "#0D2162", "#0C2060", "#0B1F5E", "#0A1E5C", "#091D5A", "#081D58"];
+    //palrgbArray = palrgbArray.reverse(); //Reverse colors
+    return palrgbArray;
+  };
+}
 
 // Map config
 var nGrades = 9;
+var aux;
 
 //////////////////////////PARÁMETROS//////////////////////////
 
@@ -145,31 +151,33 @@ function parseDates(input) { //"28/10/50"
   return newInput;
 }
 
-function parseDate(input) { //"28/10/50"
-  if(input!=undefined){
-    input=input.replace('"', "").replace('"', "");
-    if(input.indexOf('/')>-1){
-      var parts = input.split('/');
-      year = parseInt(parts[2]);
-      if(year<50){
-        year = 2000 + year;
-      }else if(year>=50 & year<100){
-        year = 1900 + year;
+if(typeof parseDate == "undefined"){
+  function parseDate(input) { //"28/10/50"
+    if(input!=undefined){
+      input=input.replace('"', "").replace('"', "");
+      if(input.indexOf('/')>-1){
+        var parts = input.split('/');
+        year = parseInt(parts[2]);
+        if(year<50){
+          year = 2000 + year;
+        }else if(year>=50 & year<100){
+          year = 1900 + year;
+        }
+        month = parts[1];
+        day = parts[0];
+      }else{
+        var parts = input.split('-');
+        year = parts[0];
+        month = parts[1];
+        day = parts[2];
       }
-      month = parts[1];
-      day = parts[0];
+      return Date.UTC(year,  parseInt(month)-1, day);
     }else{
-      var parts = input.split('-');
-      year = parts[0];
-      month = parts[1];
-      day = parts[2];
+      return null;
     }
-    return Date.UTC(year,  parseInt(month)-1, day);
-  }else{
-    return null;
   }
 }
-var aa;
+
 function showDygraph(data, filename, type){
   var file = new Blob([data], {type: type});
   url = URL.createObjectURL(file);
@@ -199,8 +207,6 @@ function showDygraph(data, filename, type){
 
           },
           axisLabelFormatter(number, granularity, opts, dygraph){
-            // console.log(number);
-            // console.log(granularity);
             var fecha = new Date(number);
             return (fecha.getMonth() + 1) + "/" + fecha.getFullYear() + " ";
           }
@@ -358,8 +364,9 @@ function getURL(bounds, done, int) {
      var charView = new Uint8Array(buffer);
      floatArray = [];
 
-     var k, l;
+     palette = updatePalette(selectName);
 
+     var k, l;
      k = 0;
      for (var j = 0; j < 256; j++)
      {
@@ -389,7 +396,11 @@ function getURL(bounds, done, int) {
           else
           {
             // Scale
-            l = parseInt((floatView[0] - varMin[varName][timeI]) / (varMax[varName][timeI] - varMin[varName][timeI]) * 255.0);
+            if((varMax[varName][timeI] - varMin[varName][timeI])!=0){
+              l = parseInt((floatView[0] - varMin[varName][timeI]) / (varMax[varName][timeI] - varMin[varName][timeI]) * 255.0);
+            }else{
+              l = 0
+            }
 
             if(l < 0)
             {
@@ -442,7 +453,6 @@ function getURL(bounds, done, int) {
     addName = "/" + varName
   }
   url = './maps' + addName + '/map/' + timeNow + '/' + z + '/' + x + '/' + y + '.bin.gz';
-  //console.log(url);
   if(z > mapMaxZoom && !int)
   {
     qz = Math.pow(2, z - mapMaxZoom );
@@ -547,7 +557,7 @@ var customMap;
 var paletteBuffer = new ArrayBuffer(256*3);
 var palette = new Uint8Array(paletteBuffer);
 
-function pal2rgb(x)
+function pal2rgb(x, varName)
 {
   if(x < 0)
   {
@@ -558,7 +568,7 @@ function pal2rgb(x)
     x = 255;
   }
 
-  return palrgb[x];
+  return palrgb(varName)[x];
 }
 
 function hexToRgb(hex) {
@@ -592,6 +602,7 @@ function changeMap_(value){
     var closest = newTimes.reduce(function(prev, curr) {
       return (Math.abs(curr - oldTime) < Math.abs(prev - oldTime) ? curr : prev);
     });
+    //console.log("changeMap_");
     timeI = newTimes.indexOf(closest);
     if(slider!=undefined){
       slider.remove(map);
@@ -600,6 +611,7 @@ function changeMap_(value){
 
     controlLayers.remove(map);
     controlLayers.addTo(map);
+    controlLayers.collapseTree();
 
     map_control_name._container.innerHTML = varTitle[value];
     controlDownload._container.firstChild.href =  "nc/" + varName + "." + extensionDownloadFile;
@@ -649,14 +661,29 @@ function updateSlider(){
       }
     });
     slider.addTo(map);
+  }else{
+    updateCustomMap();
+    if(legend != undefined & typeof legend.remove === "function"){
+      legend.remove();
+      legend.addTo(map);
+    }
+    updateURL();
   }
   return slider;
 }
 
+function updatePalette(selectName){
+  for(i=0;i<256;i++)
+  {
+    palette[i*3+0] = hexToRgb(palrgb(selectName)[i]).r;
+    palette[i*3+1] = hexToRgb(palrgb(selectName)[i]).g;
+    palette[i*3+2] = hexToRgb(palrgb(selectName)[i]).b;
+  }
+  return palette;
+}
 
-var aa;
 function init(){
-
+ //console.log("init"); 
  document.getElementById("title").innerHTML = title;
 
  if(map_position!=null & !isNaN(map_position)){
@@ -670,15 +697,8 @@ function init(){
 
   zip.workerScriptsPath = "zip_js/";
 
-  var i, x, y;
-
-  for(i=0;i<256;i++)
-  {
-    palette[i*3+0] = hexToRgb(palrgb[i]).r;
-    palette[i*3+1] = hexToRgb(palrgb[i]).g;
-    palette[i*3+2] = hexToRgb(palrgb[i]).b;
-  }
-
+  var x, y;
+  palette = updatePalette(selectName);
   var options = {
     controls: [],
     minZoom: mapMinZoom,
@@ -767,6 +787,14 @@ function init(){
     clickPopup.remove();
   });
 
+  function onMapLoad() {
+      //Nothing; function to customize from index_extra.js
+      if(typeof _onMapLoad !== "undefined"){
+        _onMapLoad();
+      }
+  };
+  map.whenReady(onMapLoad);
+
   function showClickPopup(event) {
     dblclick = false;
     setTimeout(function() {
@@ -787,7 +815,7 @@ function init(){
           .addTo(map)
           .value = value
         }
-        if(update){
+        if(update && typeof(controlCoordinates) !== 'undefined'){
           controlCoordinates._update({latlng: latlng});
         }
       }
@@ -805,18 +833,19 @@ function init(){
   }
   clickPopup = returnClickPopUp();
 
-  controlCoordinates = L.control.coordinates({
-    position:"bottomleft", //optional default "bottomright" "bottomleft"
-    decimals:2, //optional default 4
-    decimalSeperator:".", //optional default "."
-    labelTemplateLat:'<a onclick="downloadMarkerCSV(event)" href="javascript:void(0);">' + 'Download point' + '</a>' + " " + "Lat: {y}", //optional default "Lat: {y}"
-    labelTemplateLng:"Lng: {x}" + ' <a onclick="showMarkerCSV(event)" href="javascript:void(0);">' + 'Graph ' + '</a>', //optional default "Lng: {x}"
-    enableUserInput:true, //optional default true
-    useDMS:false, //optional default false
-    useLatLngOrder: true, //ordering of labels, default false-> lng-lat
-    markerType: returnClickPopUp, //optional default L.marker
-  }).addTo(map);
-
+  if(typeof(showDonwloadCoordinates) == 'undefined' || showDonwloadCoordinates){
+    controlCoordinates = L.control.coordinates({
+      position:"bottomleft", //optional default "bottomright" "bottomleft"
+      decimals:2, //optional default 4
+      decimalSeperator:".", //optional default "."
+      labelTemplateLat:'<a onclick="downloadMarkerCSV(event)" href="javascript:void(0);">' + 'Download point' + '</a>' + " " + "Lat: {y}", //optional default "Lat: {y}"
+      labelTemplateLng:"Lng: {x}" + ' <a onclick="showMarkerCSV(event)" href="javascript:void(0);">' + 'Graph ' + '</a>', //optional default "Lng: {x}"
+      enableUserInput:true, //optional default true
+      useDMS:false, //optional default false
+      useLatLngOrder: true, //ordering of labels, default false-> lng-lat
+      markerType: returnClickPopUp, //optional default L.marker
+    }).addTo(map);
+  }
   showPopup(center);
 
   map.on('click', showClickPopup);
@@ -827,12 +856,13 @@ function init(){
   document.getElementById('map').style.cursor = 'initial';
 
   function getColor(d) {
+    //console.log(varName);
     if(varMin[varName].length>1){
       time_i = timeI
     }else{
       time_i = 0
     }
-    return pal2rgb(parseInt(255*(d-varMin[varName][time_i])/(varMax[varName][time_i]-varMin[varName][time_i])));
+    return pal2rgb(parseInt(255*(d-varMin[varName][time_i])/(varMax[varName][time_i]-varMin[varName][time_i])), varName);
   }
 
   legend = L.control({position: 'bottomright', alpha: 1.0});
@@ -846,18 +876,27 @@ function init(){
       return parseFloat((varMin[varName][time_i]+i*(varMax[varName][time_i]-varMin[varName][time_i])/nGrades).toPrecision(3));
     });
 
-    var superdiv = L.DomUtil.create('div', 'superdiv', div);
+    if(typeof gradesColor_ !== "undefined"){
+      gradesColor = gradesColor_(gradesColor, varName)
+    }    
 
-    // // Add logo 2
-    // var logo = L.DomUtil.create('img', 'img', superdiv);
-    // logo.src = 'images/indecis.jpg';
-    // logo.style.width = '200px';
-    // logo.style.height = '107px';
-    // // Add logo
-    // var logo = L.DomUtil.create('img', 'img', superdiv);
-    // logo.src = 'images/IPE_logo_plano_color_sombra.png';
-    // logo.style.width = '100px';
-    // logo.style.height = '114px';
+    var superdiv = L.DomUtil.create('div', 'superdiv', div);
+    if(typeof addLogos !== "undefined"){
+      addLogos(superdiv);
+    }
+
+    function grades_text(grades, i, varName){
+      var text = grades[i];
+      if(grades[i + 1]==undefined){
+        text += '+';
+      }else{
+        text += '&ndash;' + grades[i + 1] + '<br>';
+      }
+      if(typeof grades_text_ !== "undefined"){
+        text = grades_text_(text, i, varName)
+      }
+      return text;
+    }
 
     var div = L.DomUtil.create('div', 'info legend', superdiv), grades = gradesColor, labels = [];
     if(legendTitle[varName]!=undefined){
@@ -867,13 +906,8 @@ function init(){
     }
     // loop through our density intervals and generate a label with a colored square for each interval
     for (var i = 0; i < grades.length; i++) {
-      div.innerHTML += '<i style="background:' + getColor(grades[i]) + '"></i> ' + grades[i];
-      // div.innerHTML += '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' + grades[i];
-      if(grades[i + 1]==undefined){
-        div.innerHTML += '+';
-      }else{
-        div.innerHTML += '&ndash;' + grades[i + 1] + '<br>';
-      }
+      div.innerHTML += '<i style="background:' + getColor(grades[i]) + '"></i> ';
+      div.innerHTML += grades_text(grades, i, varName);
     }
     return superdiv;
   };
@@ -893,7 +927,12 @@ function init(){
       if(level<=0){
         var text = Object.keys(childrenObject)[i];
       }else{
-        var text = '<a onmouseover="showInfo(\'' + childrenObject[Object.keys(childrenObject)[i]][0] + '\')" onmouseout="removeInfo()">'+ Object.keys(childrenObject)[i] + '</a>';
+        childrenObject_name = childrenObject[Object.keys(childrenObject)[i]][0]
+        if(typeof childrenObject[Object.keys(childrenObject)[i]][0] == 'undefined'){
+          var childrenObject_aux = childrenObject[Object.keys(childrenObject)[i]][Object.keys(childrenObject[Object.keys(childrenObject)[i]])[0]]
+          childrenObject_name = childrenObject_aux[Object.keys(childrenObject_aux)[0]]    
+        }
+        var text = '<a onmouseover="showInfo(\'' + childrenObject_name + '\')" onmouseout="removeInfo()">'+ Object.keys(childrenObject)[i] + '</a>';
       }
       var iVar = {
         label: text,
@@ -926,7 +965,6 @@ function init(){
   function children_label_array(childrenObject, level){
     var cycle = L.tileLayer('', "");
     var topVar = [];
-    //var text = "prueba";
     for (var i = 0; i < Object.keys(childrenObject).length; i++) {
       var text = '<a onmouseover="showInfo(\'' + childrenObject[Object.keys(childrenObject)[i]] + '\')" onmouseout="removeInfo()" onclick="changeMap(\'' + childrenObject[Object.keys(childrenObject)[i]] + '\')" href="javascript:void(0);">'+ menuNames[childrenObject[Object.keys(childrenObject)[i]]] + '</a>';
       var iVar = {
@@ -939,8 +977,6 @@ function init(){
   };
 
   if(Object.keys(varNames).length>1){
-    //childrenObject=varNames={Menu1:[{SubMenu1:["lai","pcp","soil_def","tmin"]}],Menu2:[{SubMenu1:["et","npp2","pet","tmax","pet"]}]}
-    //childrenObject=varNames=["lai","pcp","soil_def","tmin", "et","npp2","pet","tmax","pet"]
     if(typeof varNames[Object.keys(varNames)[0]] == "object"){
       baseTree["children"] = children_label(varNames, 0);
     }else{
@@ -992,7 +1028,6 @@ function init(){
         if(varName!=null & varName!="NaN"){
           container.innerHTML = varTitle[varName];
         }
-        // aa=container;
         container.onmouseover = function() { showInfo(); };
         container.onmouseout = function() { removeInfo(); };
         return container;
