@@ -283,11 +283,13 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
   if(missing(varNames)){
     # Ej. 
     # varNames = list("Temperature-based"=list("cd"=c("cd_month", "cd_season", "cd_year"), "gtx"=c("gtx_year"), "ptg"=c("ptg_year")), "Precipitation-based"=list("mfi"=c("mfi_year")), "Bioclimatic"=list("bio4" = c("bio4_year"), "bio5" = c("bio5_year")))
-    if(length(infoJs$varmin)>1){
-      varNames = list("Menu1"=list("SubMenu1"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)==0]), "Menu2"=list("SubMenu1"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)!=0]))
-    }else{
-      varNames = names(infoJs$varmin)
-    }
+    # if(length(infoJs$varmin)>1){
+    #   varNames = list("Menu1"=list("SubMenu1"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)==0]), "Menu2"=list("SubMenu1"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)!=0]))
+    #   # varNames = list("Menu1"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)==0], "Menu2"=names(infoJs$varmin)[(1:length(names(infoJs$varmin))%%2)!=0])
+    # }else{
+    #   varNames = names(infoJs$varmin)
+    # }
+    varNames = names(infoJs$varmin)
   }
 
   if(missing(menuNames)){

@@ -397,7 +397,12 @@ function getURL(bounds, done, int) {
           {
             // Scale
             if((varMax[varName][timeI] - varMin[varName][timeI])!=0){
-              l = parseInt((floatView[0] - varMin[varName][timeI]) / (varMax[varName][timeI] - varMin[varName][timeI]) * 255.0);
+              // console.log(floatView[0]);
+              d = floatView[0];
+              if(typeof getColor_ != "undefined"){
+                d = getColor_(d);
+              }
+              l = parseInt((d - varMin[varName][timeI]) / (varMax[varName][timeI] - varMin[varName][timeI]) * 255.0);
             }else{
               l = 0
             }
@@ -856,7 +861,9 @@ function init(){
   document.getElementById('map').style.cursor = 'initial';
 
   function getColor(d) {
-    //console.log(varName);
+    // if(typeof getColor_ != "undefined"){
+    //   d = getColor_(d);
+    // }
     if(varMin[varName].length>1){
       time_i = timeI
     }else{
@@ -906,6 +913,7 @@ function init(){
     }
     // loop through our density intervals and generate a label with a colored square for each interval
     for (var i = 0; i < grades.length; i++) {
+      // console.log(grades[i]);
       div.innerHTML += '<i style="background:' + getColor(grades[i]) + '"></i> ';
       div.innerHTML += grades_text(grades, i, varName);
     }
@@ -1052,7 +1060,7 @@ function init(){
       container.innerHTML = "";
       if(generalInformationNames!=undefined & generalInformation!=undefined){
         for(generalInformationI = 0; generalInformationI < generalInformationNames.length; generalInformationI++) {
-          if(generalInformationNames[generalInformationI]!="null" &  generalInformation[selectName][generalInformationI]!="NA"){
+          if(generalInformationNames[generalInformationI]!="null" &  generalInformation[selectName]!=undefined & generalInformation[selectName][generalInformationI]!="NA"){
             container.innerHTML = container.innerHTML + generalInformationNames[generalInformationI]  + ":" +  " ";
             var str = generalInformation[selectName][generalInformationI];
             str = str.replace( /(.*) \\url\{(.*)\}(.*)/, '$1 <a href="$2">$2</a>$3' )

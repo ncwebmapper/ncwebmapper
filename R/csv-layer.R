@@ -86,7 +86,8 @@ write_csv_layer <- function(file, folder, epsg, zoom)
 {
 	# per-session temporary directory
 	tempdir <- tempdir()
-
+	dir.create(tempdir, recursive=TRUE, showWarnings=FALSE)
+	
 	# open nc
 	nc <- nc_open(file)
 

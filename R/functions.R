@@ -200,8 +200,13 @@ readMinMax <- function(nc){
   i <- 1
   for(i in 1:times){
     data = ncvar_get(nc, nc$var[[1]]$name, c(1, 1, i), c(-1, -1, 1))
-    minMax$min[i] = min(data, na.rm = TRUE)
-    minMax$max[i] = max(data, na.rm = TRUE)
+    if(sum(!is.na(data))!=0){
+      minMax$min[i] = min(data, na.rm = TRUE)
+      minMax$max[i] = max(data, na.rm = TRUE)
+    }else{
+      minMax$min[i] = 0
+      minMax$max[i] = 0
+    }
   }
   return(minMax)
 }
