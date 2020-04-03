@@ -326,7 +326,12 @@ function removeInfo() {
   }
 };
 
+var requests = {};
+// var petitions = 0;
+
 function getURL(bounds, done, int) {
+
+  var url;
 
   done = typeof done !== 'undefined' ? done : null;
   int = typeof int !== 'undefined' ? int : false;
@@ -339,19 +344,24 @@ function getURL(bounds, done, int) {
   var qx, qy, qz;
 
   var request = new XMLHttpRequest();
+  request.x = x;
+  request.y = y;
+  request.z = z;
+  request.call = [];
 
   var error;
   var canvas = document.createElement('canvas');
   canvas.width  = 256;
   canvas.height = 256;
   var floatArray;
-
-  onload = function (e) {
-    if (request.status === 200) {
+  // petitions = petitions + 1;
+  onload_ = function(status, response){
+    // petitions = petitions - 1;
+    if (status === 200) {   
       var ctx = canvas.getContext("2d");
       var imgd = ctx.getImageData(0, 0, 256, 256);
       var pix = imgd.data;
-      var arrayBuffer = request.response;
+      var arrayBuffer = response;
       var byteArray = new Uint8Array(arrayBuffer);
       var gunzip = new Zlib.Gunzip ( byteArray );
       var decompressed = gunzip.decompress ();
@@ -397,7 +407,6 @@ function getURL(bounds, done, int) {
           {
             // Scale
             if((varMax[varName][timeI] - varMin[varName][timeI])!=0){
-              // console.log(floatView[0]);
               d = floatView[0];
               if(typeof getColor_ != "undefined"){
                 d = getColor_(d);
@@ -436,17 +445,33 @@ function getURL(bounds, done, int) {
       if(pix != undefined){
           done(floatArray[px+256*py]);
       }
+    }    
+  }
+
+  onload = function (e) {
+    request.onload_(request.status, request.response, request.call);
+    if(requests[url]!=undefined){
+      delete requests[url];
+    }
+    for (var i = 0; i < request.call.length; i++) {
+      request.call[i].status = request.status;
+      request.call[i].response = request.response;
+      request.call[i].onload_(request.status, request.response);
     }
   }
   onerror = function (e) {
+    if(requests[url]!=undefined){
+      delete requests[url];
+    }
     if(px == undefined){
       done(error, canvas);
     }else{
-        done(undefined);
+      done(undefined);
     }
   }
   request.onerror = onerror;
   request.onload = onload;
+  request.onload_ = onload_;
   if(!int){
     timeNow = parseInt(timeI)+1;
   }else{
@@ -474,7 +499,14 @@ function getURL(bounds, done, int) {
   asynchronous = true;
   request.open('GET', url, asynchronous);
   request.responseType = "arraybuffer";
-  request.send(null);
+
+  if(requests[url]==undefined){
+    request.send(null);
+    requests[url] = request;
+  }else{
+    requests[url].call.push(request);
+  }
+
   if(px == undefined){
     return canvas;
   }else{
@@ -607,7 +639,6 @@ function changeMap_(value){
     var closest = newTimes.reduce(function(prev, curr) {
       return (Math.abs(curr - oldTime) < Math.abs(prev - oldTime) ? curr : prev);
     });
-    //console.log("changeMap_");
     timeI = newTimes.indexOf(closest);
     if(slider!=undefined){
       slider.remove(map);
@@ -662,7 +693,11 @@ function updateSlider(){
           legend.addTo(map);
         }
         updateURL();
-        return times[varName][value];
+        if(typeof parseDateSlider == "undefined"){
+          return times[varName][value];
+        }else{
+          return parseDateSlider(times[varName][value]);
+        }
       }
     });
     slider.addTo(map);
@@ -688,7 +723,6 @@ function updatePalette(selectName){
 }
 
 function init(){
- //console.log("init"); 
  document.getElementById("title").innerHTML = title;
 
  if(map_position!=null & !isNaN(map_position)){
@@ -913,7 +947,6 @@ function init(){
     }
     // loop through our density intervals and generate a label with a colored square for each interval
     for (var i = 0; i < grades.length; i++) {
-      // console.log(grades[i]);
       div.innerHTML += '<i style="background:' + getColor(grades[i]) + '"></i> ';
       div.innerHTML += grades_text(grades, i, varName);
     }

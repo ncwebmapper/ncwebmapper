@@ -8,6 +8,10 @@ function parseDate(input) {
   }
 }
 
+// function parseDateSlider(input) {
+//   return input.replace('-16','');
+// }
+
 function getColor_(d){
   if(varName.includes("trend")){
     d = d - 3;
