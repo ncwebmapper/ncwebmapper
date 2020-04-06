@@ -1,12 +1,22 @@
 
 //Config parameters
-var zoom = 6;
-
+if(typeof zoom == "undefined"){
+  var zoom = 6;
+}
 // Global config
-var chooseText = "Choose Index";
-var indexText = "Index";
-var dateText = "Date";
-var errorText = "Please, select a point with data";
+if(typeof chooseText == "undefined"){
+  var chooseText = "Choose Index";
+}
+if(typeof indexText == "undefined"){
+  var indexText = "Index";
+}
+if(typeof dateText == "undefined"){
+  var dateText = "Date";
+}
+if(typeof errorText == "undefined"){
+  var errorText = "Please, select a point with data";
+}
+
 var defaultVarName = Object.keys(varTitle)[0]; // Id of the variable to be displayed by default
 
 if(typeof palrgb == "undefined"){
