@@ -98,3 +98,7 @@ a.leaflet-control-slider-toggle{
   border-radius: 5px;
   /*max-width: 400px;*/
 }
+
+#download_iframe{
+  display: none;
+}
