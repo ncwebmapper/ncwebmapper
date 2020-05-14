@@ -774,7 +774,9 @@ function init(){
 
   droughtOverlayMap = newDroughtOverlayMap("getURL");
 
-  var urlLayer = window.location.protocol + '//{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png';
+  // var url_server = '//{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png';
+  var url_server = '//server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+  var urlLayer = window.location.protocol + url_server;
   hyddaBase = L.tileLayerGoogle(urlLayer, {
     zIndex: 1,
     ext: 'png'
@@ -782,7 +784,7 @@ function init(){
 
   var urlLayer = window.location.protocol + '//stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}.{ext}';
   var googleLabelLayer2 = L.tileLayerGoogle(urlLayer, {
-    attribution: '<a href="info.html">Reference the data</a>' + ' | ' + '<a href="http://stamen.com">Stamen Design</a>' + ' | ' + '<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' + ' | ' + '<a href="http://leafletjs.com">Leaflet</a>',
+    attribution: '<a href="info.html">Reference the data</a>' + ' | ' + '<a href="https://www.esri.es">Esri</a>' + ' | ' + '<a href="http://stamen.com">Stamen Design</a>' + ' | ' + '<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' + ' | ' + '<a href="http://leafletjs.com">Leaflet</a>',
     subdomains: 'abcd',
     minZoom: 0,
     maxZoom: 20,
