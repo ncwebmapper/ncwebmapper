@@ -68,7 +68,7 @@ var map_name = getUrlParameter("map_name");
 if(Object.keys(varTitle).length>0){
   var varName = defaultVarName;
 }else{
-  var varName = "NaN";
+  var varName = Object.keys(times)[0]; //"NaN";
 }
 var selectName = varName;
 var timeI = getTimeI();
@@ -1081,9 +1081,12 @@ function init(){
       },
       onAdd: function(map) {
         this._map = map;
-        var container = this._container = L.DomUtil.create('div', 'map_name');
-        if(varName!=null & varName!="NaN"){
+        var container;
+        if(varName!=null & varName!="NaN" & times.length>1){
+          container = this._container = L.DomUtil.create('div', 'map_name');
           container.innerHTML = varTitle[varName];
+        }else{
+          container = this._container = L.DomUtil.create('div', '');
         }
         container.onmouseover = function() { showInfo(); };
         container.onmouseout = function() { removeInfo(); };
