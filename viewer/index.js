@@ -1,5 +1,8 @@
 
 //Config parameters
+
+var minimumvalue = -1000;
+
 if(typeof zoom == "undefined"){
   var zoom = 6;
 }
@@ -806,7 +809,8 @@ function init(){
   map.on('mousemove', function(event) {
     // Mostrar valor del punto actual seleccionado
     var mousemoveValue = function(coor){
-      if(coor > -1.E-37){
+      // if(coor > -1.E-37){
+      if(coor > minimumvalue){
         popup = L.popup({autoPan:false,
           closeButton:false,
           autoClose:true,
