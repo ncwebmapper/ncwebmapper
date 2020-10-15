@@ -1,10 +1,9 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
+<!DOCTYPE html> <!-- Code from https://github.com/ncwebmapper -->
+<html lang="en">
   <head>
-    <title id="title"></title>
-    <meta charset="UTF-8" />
-    <meta http-equiv='imagetoolbar' content='text/html; charset=UTF-8'/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title id="title">ncwebmapper</title>
+    <meta name="description" content=""/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <link rel="stylesheet" href="leaflet/leaflet.css"/>
     <link rel="stylesheet" href="leaflet-slider/dist/leaflet-slider.css"/>
     <link rel="stylesheet" href="index.css"/>
@@ -19,7 +18,7 @@
   <body onload="init()">
     <div id="map"></div>
     <script src="zlib_js/gunzip.min.js"></script>
-    <script type="text/javascript" src="zip_js/zip.js"></script>
+    <script src="zip_js/zip.js"></script>
     <script src="leaflet/leaflet.js"></script>
     <script src="leaflet-slider/dist/leaflet-slider.js"></script>
     <script src="times.js"></script>
@@ -28,7 +27,7 @@
     <script src="leaflet-control-layers-tree/L.Control.Layers.Tree.js"></script>
     <script src="dygraphs/dygraph.min.js"></script>
     <!-- https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js -->
-    <script id="MathJax-script" async src="mathjax/tex-chtml.js"></script>
+    <script id="MathJax-script" src="mathjax/tex-chtml.js" async></script>
     <script src="index_extra.js"></script>   
     <script src="index.js"></script>
     <iframe id="download_iframe"></iframe>

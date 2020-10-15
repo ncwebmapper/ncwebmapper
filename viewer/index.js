@@ -737,6 +737,7 @@ function updatePalette(selectName){
 
 function init(){
  document.getElementById("title").innerHTML = title;
+ document.title = title;
 
  if(map_position!=null & !isNaN(map_position)){
   timeI = map_position;
