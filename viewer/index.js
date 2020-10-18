@@ -20,6 +20,18 @@ if(typeof errorText == "undefined"){
   var errorText = "Please, select a point with data";
 }
 
+if(typeof getVarMin == "undefined"){
+  function getVarMin(varName){
+    return varMin[varName];
+  }
+}
+
+if(typeof getVarMax == "undefined"){
+  function getVarMax(varName){
+    return varMax[varName];
+  }
+}
+
 var defaultVarName = Object.keys(varTitle)[0]; // Id of the variable to be displayed by default
 
 if(typeof palrgb == "undefined"){
@@ -133,7 +145,12 @@ extractCoorZoom = function(latlng, z, functionValue, int){
   mousemoveTile = function(value){
     if(value != undefined)
     {
-      functionValue(parseInt(value*10)/10);
+      value = parseInt(value*10)/10
+      if(pointValue_ != undefined)
+      {
+        value = pointValue_(value, varName)
+      }
+      functionValue(value);
     }
   }
   var bounds={x:tx, y:ty, z:z, px:px, py:py};
@@ -419,12 +436,12 @@ function getURL(bounds, done, int) {
           else
           {
             // Scale
-            if((varMax[varName][timeI] - varMin[varName][timeI])!=0){
+            if((getVarMax(varName)[timeI] - getVarMin(varName)[timeI])!=0){
               d = floatView[0];
               if(typeof getColor_ != "undefined"){
                 d = getColor_(d);
               }
-              l = parseInt((d - varMin[varName][timeI]) / (varMax[varName][timeI] - varMin[varName][timeI]) * 255.0);
+              l = parseInt((d - getVarMin(varName)[timeI]) / (getVarMax(varName)[timeI] - getVarMin(varName)[timeI]) * 255.0);
             }else{
               l = 0
             }
@@ -735,6 +752,20 @@ function updatePalette(selectName){
   return palette;
 }
 
+if(typeof getColor == "undefined"){
+  function getColor(d) {
+    // if(typeof getColor_ != "undefined"){
+    //   d = getColor_(d);
+    // }
+    if(getVarMin(varName).length>1){
+      time_i = timeI
+    }else{
+      time_i = 0
+    }
+    return pal2rgb(parseInt(255*(d-getVarMin(varName)[time_i])/(getVarMax(varName)[time_i]-getVarMin(varName)[time_i])), varName);
+  }
+}
+
 function init(){
  document.getElementById("title").innerHTML = title;
  document.title = title;
@@ -811,7 +842,7 @@ function init(){
     // Mostrar valor del punto actual seleccionado
     var mousemoveValue = function(coor){
       // if(coor > -1.E-37){
-      if(coor > minimumvalue){
+      if(typeof coor == "string" | coor > minimumvalue){
         popup = L.popup({autoPan:false,
           closeButton:false,
           autoClose:true,
@@ -911,27 +942,15 @@ function init(){
   });
   document.getElementById('map').style.cursor = 'initial';
 
-  function getColor(d) {
-    // if(typeof getColor_ != "undefined"){
-    //   d = getColor_(d);
-    // }
-    if(varMin[varName].length>1){
-      time_i = timeI
-    }else{
-      time_i = 0
-    }
-    return pal2rgb(parseInt(255*(d-varMin[varName][time_i])/(varMax[varName][time_i]-varMin[varName][time_i])), varName);
-  }
-
   legend = L.control({position: 'bottomright', alpha: 1.0});
   legend.onAdd = function (map) {
-    if(varMin[varName].length>1){
+    if(getVarMin(varName).length>1){
       time_i = timeI
     }else{
       time_i = 0
     }
     var gradesColor = Array.apply(null, Array(nGrades+1)).map(function (_, i) {
-      return parseFloat((varMin[varName][time_i]+i*(varMax[varName][time_i]-varMin[varName][time_i])/nGrades).toPrecision(3));
+      return parseFloat((getVarMin(varName)[time_i]+i*(getVarMax(varName)[time_i]-getVarMin(varName)[time_i])/nGrades).toPrecision(3));
     });
 
     if(typeof gradesColor_ !== "undefined"){
