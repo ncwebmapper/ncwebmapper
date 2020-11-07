@@ -1072,18 +1072,21 @@ function init(){
     text.textContent = indexText;
   }
 
-  if(varName!=null){
+  if(varName != null){
     L.Control.Download = L.Control.extend({
       options: {
         position: 'bottomleft',
       },
       onAdd: function(map) {
         this._map = map;
-        var container = this._container = L.DomUtil.create('div', 'map_name');
-        if(varName!=null & varName!="NaN"){
+        var container;        
+        if(varName != null & varName != "NaN"){
+          container = this._container = L.DomUtil.create('div', 'map_name');
           var link = L.DomUtil.create("a", "uiElement label", container);
           link.href =  "nc/" + varName + "." + extensionDownloadFile;
           link.textContent = 'Download NC';
+        }else{
+          container = this._container = L.DomUtil.create('div', '');
         }
         return container;
       },
