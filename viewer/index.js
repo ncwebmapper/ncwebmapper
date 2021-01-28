@@ -1105,7 +1105,7 @@ function init(){
       onAdd: function(map) {
         this._map = map;
         var container;
-        if(varName!=null & varName!="NaN"){ // & times.length>1
+        if(varName!=null & varName!="NaN" & varTitle[varName]!=undefined){ // & times.length>1
           container = this._container = L.DomUtil.create('div', 'map_name');
           container.innerHTML = varTitle[varName];
         }else{
