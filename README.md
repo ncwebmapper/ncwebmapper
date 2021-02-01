@@ -8,7 +8,7 @@ Source code of the R package ncwebmapper, still not available on CRAN.
 
 ncwebmapper makes it easy to create interactive web pages for publishing spatio-temporal NetCDF files using Leaflet library.
 
-This package has been developed by the Climatology and Climate Services Laboratory ([LCSC](http://spread.csic.es)) and it has been used in several of its published climate index.
+This package has been developed by the Climatology and Climate Services Laboratory ([LCSC](https://lcsc.csic.es)) and it has been used in several of its published climate index.
 
 # Examples of use:
 * INDECIS climate indicators ([web](https://indecis.csic.es)) ([data](https://indecis.csic.es/nc))
