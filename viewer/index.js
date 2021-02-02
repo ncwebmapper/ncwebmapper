@@ -1179,3 +1179,4 @@ function init(){
     .setLatLng(map.getCenter())
     .setContent('<div id="popGraph">Loading graph</div>');
 }
+init();
