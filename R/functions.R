@@ -58,7 +58,13 @@ raster_3857 <- function(nc, epsg){
   nrow  <- nc$dim[[dimNames$Y]]$len
   ncol  <- nc$dim[[dimNames$X]]$len
   lon   <- nc$dim[[dimNames$X]]$vals
+  if(lon[1]>lon[length(lon)]){
+    lon <- rev(lon)
+  }
   lat   <- nc$dim[[dimNames$Y]]$vals
+  if(lat[1]>lat[length(lat)]){
+    lat <- rev(lat)
+  }
   dx    <- lon[2] - lon[1]
   dy    <- lat[2] - lat[1]
 
@@ -100,8 +106,8 @@ returnXYNames <- function(nc){
 #' @return times
 read_times <- function(nc, formatdates)
 {
-    times <- nc$dim[["time"]]$vals
-    units <- strsplit(nc$dim[["time"]]$units, " ")[[1]]
+    times <- nc$dim[[timePosition(nc)]]$vals
+    units <- strsplit(nc$dim[[timePosition(nc)]]$units, " ")[[1]]
     origin <- as.Date(units[which(units=="since")+1]) #length(units)
     if(length(origin)>0){
       times <- as.Date(times, origin=origin)
@@ -181,8 +187,14 @@ read_coords <- function(nc, epsg){
   # read spatial dims
   dimNames <- returnXYNames(nc)
   lon   <- nc$dim[[dimNames$X]]$vals
+  if(lon[1]>lon[length(lon)]){
+    lon <- rev(lon)
+  }
   lat   <- nc$dim[[dimNames$Y]]$vals
-
+  if(lat[1]>lat[length(lat)]){
+    lat <- rev(lat)
+  }
+  
   coords <- expand.grid(lon, lat)
   colnames(coords) <- c("lon", "lat")
   coords <- SpatialPoints(coords, proj4string=CRS(paste0("+init=epsg:", epsg)))
@@ -195,7 +207,7 @@ read_coords <- function(nc, epsg){
 #' @param nc nc
 #' @return day min max
 readMinMax <- function(nc){
-  times <- length(nc$dim[["time"]]$vals)
+  times <- length(nc$dim[[timePosition(nc)]]$vals)
   minMax <- list(min=array(NA, dim=times), max=array(NA, dim=times))
   i <- 1
   for(i in 1:times){
@@ -245,5 +257,12 @@ maxFusion <- function(max1, max2, positions){
     max.new[i] <- max(max1[i], max2[i], na.rm = TRUE)
   }
   return(max.new)
+}
+
+#' dim time position
+#' @param nc open nc file
+#' @return max
+timePosition <- function(nc){
+  return(grep("time", tolower(names(nc$dim))))
 }
 

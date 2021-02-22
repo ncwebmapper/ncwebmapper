@@ -44,7 +44,7 @@ library(ncdf4)
 #' @param date date
 draw_raster_date <- function(nc, date){
 	# read times
-	times <- nc$dim[["time"]]$vals
+	times <- nc$dim[[timePosition(nc)]]$vals
 	# read spatial dims
 	dimNames <- returnXYNames(nc)
 	nrow  <- nc$dim[[dimNames$Y]]$len
@@ -103,7 +103,7 @@ write_csv_layer <- function(file, folder, epsg, zoom)
 	}
 
 	# read times
-	times <- nc$dim[["time"]]$vals
+	times <- nc$dim[[timePosition(nc)]]$vals
 	ntime <- length(times)
 
 	# read spatial dims
@@ -111,7 +111,13 @@ write_csv_layer <- function(file, folder, epsg, zoom)
 	nrow  <- nc$dim[[dimNames$Y]]$len
 	ncol  <- nc$dim[[dimNames$X]]$len
 	lon   <- nc$dim[[dimNames$X]]$vals
+	if(lon[1]>lon[length(lon)]){
+		lon <- rev(lon)
+	}
 	lat   <- nc$dim[[dimNames$Y]]$vals
+	if(lat[1]>lat[length(lat)]){
+		lat <- rev(lat)
+	}
 	dx    <- lon[2] - lon[1]
 	dy    <- lat[2] - lat[1]
 
@@ -183,6 +189,7 @@ write_csv_layer <- function(file, folder, epsg, zoom)
 			# if some data
 			if(sum(m1 == 0) < 256*256)
 			{
+				destname = file.path(folder, "map", 0, zoom, i, paste0(x1[2]+x2[2]-j, ".bin.gz"))
 				# create output folder
 				dir.create(file.path(folder, "map", 0, zoom, i), showWarnings=FALSE, recursive=TRUE)
 
@@ -195,7 +202,7 @@ write_csv_layer <- function(file, folder, epsg, zoom)
 				f <- file(sdat.name, 'wb')
 				writeBin(as.integer(as.vector(m1)), f, size=4L, endian="little")
 				close(f)
-				gzip(sdat.name, destname=file.path(folder, "map", 0, zoom, i, paste0(x1[2]+x2[2]-j, ".bin.gz")), overwrite=TRUE, remove=TRUE)
+				gzip(sdat.name, destname=destname, overwrite=TRUE, remove=TRUE)
 			}
 		}
 	}

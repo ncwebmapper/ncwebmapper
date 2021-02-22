@@ -67,8 +67,8 @@ write_csv <- function(file, folder, epsg, dates, formatdates)
 	# read times
 	if(missing(dates))
 	{
-		# times <- nc$dim[["time"]]$vals
-		# units <- strsplit(nc$dim[["time"]]$units, " ")[[1]]
+		# times <- nc$dim[[timePosition(nc)]]$vals
+		# units <- strsplit(nc$dim[[timePosition(nc)]]$units, " ")[[1]]
 		# origin <- as.Date(units[which(units=="since")+1]) #length(units)
 		# times <- as.Date(times, origin=origin)
 		# if(!missing(formatdates)){
@@ -83,14 +83,23 @@ write_csv <- function(file, folder, epsg, dates, formatdates)
 		times <- dates
 	}
 	ntime <- length(times)
+	if(ntime <= 1){
+		nc_close(nc)
+		return()
+	}
 
 	# read spatial dims
 	dimNames <- returnXYNames(nc)
 	nrow  <- nc$dim[[dimNames$Y]]$len
 	ncol  <- nc$dim[[dimNames$X]]$len
 	lon   <- nc$dim[[dimNames$X]]$vals
+	if(lon[1]>lon[length(lon)]){
+		lon <- rev(lon)
+	}
 	lat   <- nc$dim[[dimNames$Y]]$vals
-
+	if(lat[1]>lat[length(lat)]){
+		lat <- rev(lat)
+	}
 	coords <- read_coords(nc, epsg)
 	coords <- format(round(coords, 6), nsmall=6) # round to six decimal places
 
@@ -123,7 +132,7 @@ write_csv <- function(file, folder, epsg, dates, formatdates)
 
 				# output table
 				table <- array(numeric(), c(ntime, 2))
-				colnames(table) <- c(nc$dim[["time"]]$units, nc$var[[1]]$name)
+				colnames(table) <- c(nc$dim[[timePosition(nc)]]$units, nc$var[[1]]$name)
 				table[,1] <- format(times)
 				table[,2] <- signif(matrix[i,], digits = 5)
 				table[table=="NaN"] <- NA

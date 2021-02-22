@@ -65,15 +65,25 @@ write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0)
 	}
 
 	# read times
-	times <- nc$dim[["time"]]$vals
+	times <- nc$dim[[timePosition(nc)]]$vals
 	ntime <- length(times)
 
 	# read spatial dims
+	lonflip <- FALSE
+	latflip <- FALSE
 	dimNames <- returnXYNames(nc)
 	nrow  <- nc$dim[[dimNames$Y]]$len
 	ncol  <- nc$dim[[dimNames$X]]$len
 	lon   <- nc$dim[[dimNames$X]]$vals
+	if(lon[1]>lon[length(lon)]){
+		lonflip <- TRUE
+		lon <- rev(lon)
+	}
 	lat   <- nc$dim[[dimNames$Y]]$vals
+	if(lat[1]>lat[length(lat)]){
+		latflip <- TRUE
+		lat <- rev(lat)
+	}
 	dx    <- lon[2] - lon[1]
 	dy    <- lat[2] - lat[1]
 
@@ -164,6 +174,14 @@ write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0)
 				}else{
 					data <- datarange
 				}
+
+				if(lonflip){
+					data <- data[dim(data)[1]:1,]
+				}
+				if(latflip){
+					data <- data[, dim(data)[2]:1]
+				}
+
 				# warp to mercator
 				m <- array(data[index], dim=dim(index))
 
@@ -181,6 +199,7 @@ write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0)
 						# if some data
 						if(sum(is.na(m1)) < 256*256)
 						{
+							destname = file.path(folder, "map", time+t+timeshift, zoom, i, paste0(x1[2]+x2[2]-j, ".bin.gz"))
 							# create output folder
 							dir.create(file.path(folder, "map", time+t+timeshift, zoom, i), showWarnings=FALSE, recursive=TRUE)
 
@@ -197,7 +216,7 @@ write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0)
 							# f <- file(sdat.name, 'rb')
 							# aux <- matrix(readBin(f, numeric(), size=4, endian = "little", n=256*256), nrow = 256, ncol = 256)
 							# close(f)
-							gzip(sdat.name, destname=file.path(folder, "map", time+t+timeshift, zoom, i, paste0(x1[2]+x2[2]-j, ".bin.gz")), overwrite=TRUE, remove=TRUE)
+							gzip(sdat.name, destname=destname, overwrite=TRUE, remove=TRUE)
 						}
 					}
 				}

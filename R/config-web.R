@@ -145,8 +145,8 @@ config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, 
     varmax = varMinMax$max
   }else{
     if(!missing(file)){
-      varmin = array(varmin, dim=length(nc$dim[["time"]]$vals))
-      varmax = array(varmax, dim=length(nc$dim[["time"]]$vals))
+      varmin = array(varmin, dim=length(nc$dim[[timePosition(nc)]]$vals))
+      varmax = array(varmax, dim=length(nc$dim[[timePosition(nc)]]$vals))
     }
   }
   # Delete Inf
