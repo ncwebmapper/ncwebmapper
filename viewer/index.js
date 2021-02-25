@@ -19,6 +19,18 @@ if(typeof dateText === "undefined"){
 if(typeof errorText === "undefined"){
   var errorText = "Please, select a point with data";
 }
+if(typeof downloadPointText === "undefined"){
+  var downloadPointText = 'Download point';
+}
+if(typeof showGraphText === "undefined"){
+  var showGraphText = 'Graph';
+}
+if(typeof referenceTheDataText === "undefined"){
+  var referenceTheDataText = 'Reference the data';
+}
+if(typeof downloadNCText === "undefined"){
+  var downloadNCText = 'Download NC';
+}
 
 if(typeof getVarMin === "undefined"){
   function getVarMin(varName){
@@ -819,7 +831,7 @@ function init(){
 
   var urlLayer = window.location.protocol + '//stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}.{ext}';
   var googleLabelLayer2 = L.tileLayerGoogle(urlLayer, {
-    attribution: '<a href="info.html">Reference the data</a>' + ' | ' + '<a href="https://www.esri.es">Esri</a>' + ' | ' + '<a href="http://stamen.com">Stamen Design</a>' + ' | ' + '<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' + ' | ' + '<a href="http://leafletjs.com">Leaflet</a>',
+    attribution: '<a href="info.html">' + referenceTheDataText + '</a>' + ' | ' + '<a href="https://www.esri.es">Esri</a>' + ' | ' + '<a href="http://stamen.com">Stamen Design</a>' + ' | ' + '<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' + ' | ' + '<a href="http://leafletjs.com">Leaflet</a>',
     subdomains: 'abcd',
     minZoom: 0,
     maxZoom: 20,
@@ -925,8 +937,8 @@ function init(){
       position:"bottomleft", //optional default "bottomright" "bottomleft"
       decimals:2, //optional default 4
       decimalSeperator:".", //optional default "."
-      labelTemplateLat:'<a onclick="downloadMarkerCSV(event)" href="javascript:void(0);">' + 'Download point' + '</a>' + " " + "Lat: {y}", //optional default "Lat: {y}"
-      labelTemplateLng:"Lng: {x}" + ' <a onclick="showMarkerCSV(event)" href="javascript:void(0);">' + 'Graph ' + '</a>', //optional default "Lng: {x}"
+      labelTemplateLat:'<a onclick="downloadMarkerCSV(event)" href="javascript:void(0);">' + downloadPointText + '</a>' + " " + "Lat: {y}", //optional default "Lat: {y}"
+      labelTemplateLng:"Lng: {x}" + ' <a onclick="showMarkerCSV(event)" href="javascript:void(0);">' + showGraphText + '</a>', //optional default "Lng: {x}"
       enableUserInput:true, //optional default true
       useDMS:false, //optional default false
       useLatLngOrder: true, //ordering of labels, default false-> lng-lat
@@ -1084,7 +1096,7 @@ function init(){
           container = this._container = L.DomUtil.create('div', 'map_name');
           var link = L.DomUtil.create("a", "uiElement label", container);
           link.href =  "nc/" + varName + "." + extensionDownloadFile;
-          link.textContent = 'Download NC';
+          link.textContent = downloadNCText;
         }else{
           container = this._container = L.DomUtil.create('div', '');
         }
