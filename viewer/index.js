@@ -879,9 +879,13 @@ function init(){
     ext: 'png'
   });
 
+  if(typeof info_html === "undefined"){
+    info_html = 'info.html'
+  }
+
   var urlLayer = window.location.protocol + '//stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}.{ext}';
   var googleLabelLayer2 = L.tileLayerGoogle(urlLayer, {
-    attribution: '<a href="info.html">' + referenceTheDataText + '</a>' + ' | ' + '<a href="https://www.esri.es">Esri</a>' + ' | ' + '<a href="http://stamen.com">Stamen Design</a>' + ' | ' + '<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' + ' | ' + '<a href="http://leafletjs.com">Leaflet</a>',
+    attribution: '<a href="' + info_html + '">' + referenceTheDataText + '</a>' + ' | ' + '<a href="https://www.esri.es">Esri</a>' + ' | ' + '<a href="http://stamen.com">Stamen Design</a>' + ' | ' + '<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' + ' | ' + '<a href="http://leafletjs.com">Leaflet</a>',
     subdomains: 'abcd',
     minZoom: 0,
     maxZoom: 20,
