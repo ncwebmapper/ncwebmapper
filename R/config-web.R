@@ -57,8 +57,9 @@ library(raster)
 #' @param legend legend
 #' @param varName varName
 #' @param write true si se escribe el fichero js al terminar la ejecución; implica que la web solo muestra un "mapa"; en otro caso se supone que la web tendrá más de un mapa
+#' @param zoom zoom
 #' @export
-config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, lonIni, latEnd, lonEnd, timeIni, timeEnd, varmin, varmax, varName, infoJs = NA, legend="NaN", write=TRUE){
+config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, lonIni, latEnd, lonEnd, timeIni, timeEnd, varmin, varmax, varName, infoJs = NA, legend="NaN", write=TRUE, zoom){
 
   if(missing(infoJs) || sum(!is.na(infoJs))==0)
   {
@@ -183,9 +184,13 @@ config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, 
   }
   infoJs$mapMaxZoom <- maxzoom
 
-  # increase resolution 16 times (2^4)
-  infoJs$levelCsv <- maxzoom + 3
-
+  if(missing(zoom))
+  {
+    # increase resolution 16 times (2^4)
+    infoJs$levelCsv <- maxzoom + 3
+  }else{
+    infoJs$levelCsv <- zoom + 4
+  }
   if(write){
     writeJs(folder, infoJs)
   }

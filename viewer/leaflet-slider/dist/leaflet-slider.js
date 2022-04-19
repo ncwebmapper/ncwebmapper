@@ -54,9 +54,16 @@ L.Control.Slider = L.Control.extend({
         this._sliderLink.innerHTML = this.options.getValue(this.value);
         this.update(this.value);
     },
-    _updateValueInput: function (event) { 
-        if(times.indexOf(this._sliderValue.value)!=-1 && this.slider.value!=times.indexOf(this._sliderValue.value)){
-            this.slider.value = times.indexOf(this._sliderValue.value);
+    _updateValueInput: function (event) {
+        var useTimes;
+        if(times.indexOf != undefined){
+            useTimes = times;
+        }else{
+            useTimes = times[varName];
+        }
+
+        if(useTimes.indexOf(this._sliderValue.value)!=-1 && this.slider.value!=useTimes.indexOf(this._sliderValue.value)){
+            this.slider.value = useTimes.indexOf(this._sliderValue.value);
             this._updateValue();
         }
     },

@@ -88,7 +88,8 @@ write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0)
 	dy    <- lat[2] - lat[1]
 
 	# per-session temporary directory
-	tempdir <- tempdir()
+	tempdir <- tempdir(check = TRUE)
+	dir.create(tempdir, recursive=TRUE, showWarnings=FALSE)
 
 	# create output folder
 	dir.create(file.path(folder, "map"), recursive=TRUE, showWarnings=FALSE)
@@ -223,6 +224,9 @@ write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0)
 			}
 		}
 	}
+	# Delete temp folder
+	file.remove(rev(list.files(tempdir, full.names = TRUE, all.files = TRUE, recursive = TRUE, include.dirs = TRUE)))
+	file.remove(tempdir)
 }
 
 #' merge data layers
@@ -246,7 +250,8 @@ merge_data_layer <- function(folders, folder)
 	}
 
 	# per-session temporary directory
-	tempdir <- tempdir()
+	tempdir <- tempdir(check = TRUE)
+	dir.create(tempdir, recursive=TRUE, showWarnings=FALSE)
 
 	# read time list
 	times <- sort(list.files(file.path(x, "map")))
@@ -335,6 +340,9 @@ merge_data_layer <- function(folders, folder)
 			}		
 		}
 	}
+	# Delete temp folder
+	file.remove(rev(list.files(tempdir, full.names = TRUE, all.files = TRUE, recursive = TRUE, include.dirs = TRUE)))
+	file.remove(tempdir)
 }
 
 # test

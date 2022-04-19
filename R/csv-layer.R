@@ -85,7 +85,7 @@ draw_raster_date <- function(nc, date){
 write_csv_layer <- function(file, folder, epsg, zoom)
 {
 	# per-session temporary directory
-	tempdir <- tempdir()
+	tempdir <- tempdir(check = TRUE)
 	dir.create(tempdir, recursive=TRUE, showWarnings=FALSE)
 	
 	# open nc
@@ -107,15 +107,19 @@ write_csv_layer <- function(file, folder, epsg, zoom)
 	ntime <- length(times)
 
 	# read spatial dims
+	lonflip <- FALSE
+	latflip <- FALSE
 	dimNames <- returnXYNames(nc)
 	nrow  <- nc$dim[[dimNames$Y]]$len
 	ncol  <- nc$dim[[dimNames$X]]$len
 	lon   <- nc$dim[[dimNames$X]]$vals
 	if(lon[1]>lon[length(lon)]){
+		lonflip <- TRUE
 		lon <- rev(lon)
 	}
 	lat   <- nc$dim[[dimNames$Y]]$vals
 	if(lat[1]>lat[length(lat)]){
+		latflip <- TRUE
 		lat <- rev(lat)
 	}
 	dx    <- lon[2] - lon[1]
@@ -135,7 +139,14 @@ write_csv_layer <- function(file, folder, epsg, zoom)
 	dir.create(file.path(folder, "map", 0), recursive=TRUE, showWarnings=FALSE)
 
 	# create raster
-	r <- raster(index[c(nrow:1),])
+	if(lonflip){
+		index <- index[dim(index)[1]:1,]
+	}
+	if(!latflip){
+		index <- index[, dim(index)[2]:1]
+	}
+	r <- raster(index)
+	# r <- raster(index[c(nrow:1),])
 	extent(r) <- c(lon[1] - dx/2, rev(lon)[1] + dx/2, lat[1] - dy/2, rev(lat)[1] + dy/2)
 	crs(r) <- crs(paste0("+init=epsg:", epsg))
 	r.crs <- projectRaster(from=r, method="ngb", crs=CRS(paste0("+init=epsg:", "3857")))
@@ -208,6 +219,10 @@ write_csv_layer <- function(file, folder, epsg, zoom)
 	}
 
 	nc_close(nc)
+
+	# Delete temp folder
+	file.remove(rev(list.files(tempdir, full.names = TRUE, all.files = TRUE, recursive = TRUE, include.dirs = TRUE)))
+	file.remove(tempdir)
 }
 
 #' merge csv layers
@@ -220,7 +235,8 @@ write_csv_layer <- function(file, folder, epsg, zoom)
 merge_csv_layer <- function(folders, folder)
 {
 	# per-session temporary directory
-	tempdir <- tempdir()
+	tempdir <- tempdir(check = TRUE)
+	dir.create(tempdir, recursive=TRUE, showWarnings=FALSE)
 
 	# check layers share zoom level
 	zoom <- strtoi(list.files(file.path(folders[1], "map", 0))[1])
@@ -292,6 +308,9 @@ merge_csv_layer <- function(folders, folder)
 		# remove first element to process next
 		max <- max[-1]
 	}
+	# Delete temp folder
+	file.remove(rev(list.files(tempdir, full.names = TRUE, all.files = TRUE, recursive = TRUE, include.dirs = TRUE)))
+	file.remove(tempdir)
 }
 
 # test

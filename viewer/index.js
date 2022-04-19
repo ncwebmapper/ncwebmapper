@@ -188,7 +188,6 @@ extractCoorZoom = function(latlng, z, functionValue, int){
   var py = 255 - Math.round((cursory - ty * dy - w1y) / (dy/256.0));
   // mirror ty
   ty = Math.pow(2, z) - 1 - ty;
-
   var value = null;
   mousemoveTile = function(value){
     if(typeof value !== "undefined")
@@ -482,7 +481,6 @@ function getURL(bounds, done, int) {
           charView[2] = decompressed[l+2];
           charView[3] = decompressed[l+3];
           floatArray[k/4] = floatView[0];
-
           if(floatView[0]==null ||  isNaN(floatView[0]))
           {
             // Transparent
@@ -510,11 +508,13 @@ function getURL(bounds, done, int) {
               l = 255;
             }
 
-            l = 3 * l;
+            // l = 3 * l;
+            l = 4 * l;
             pix[k  ] = palette[l  ];
             pix[k+1] = palette[l+1];
             pix[k+2] = palette[l+2];
-            pix[k+3] = 255;
+            // pix[k+3] = 255; 
+            pix[k+3] = palette[l+3]; // 0 - 255
           }
 
           k += 4;
@@ -527,10 +527,10 @@ function getURL(bounds, done, int) {
     if(typeof px === "undefined"){
       done(error, canvas);
     }else{
-      if(typeof pix !== "undefined"){
+      if(typeof pix !== "undefined"){    
           done(floatArray[px+256*py]);
       }
-    }    
+    }
   }
 
   onload = function (e) {
@@ -676,7 +676,7 @@ var customMap;
   return n;
 };
 
-var paletteBuffer = new ArrayBuffer(256*3);
+var paletteBuffer = new ArrayBuffer(256*4);
 var palette = new Uint8Array(paletteBuffer);
 
 function pal2rgb(x, varName)
@@ -700,11 +700,17 @@ function hexToRgb(hex) {
         return r + r + g + g + b + b;
     });
 
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if(hex.length <= 7){
+      hex = hex + "FF"
+    }
+
+    // var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result ? {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
+        b: parseInt(result[3], 16),
+        a: parseInt(result[4], 16)
     } : null;
 }
 
@@ -745,11 +751,16 @@ function changeMap_(value){
   }
 }
 
+var updateCustomMapTimeOut;
+
 function updateCustomMap(){
-  if(customMap.hasLayer(droughtOverlayMap) && map.hasLayer(customMap)){
-    customMap.removeLayer(droughtOverlayMap)
-    customMap.addLayer(droughtOverlayMap);
-  }
+  clearTimeout(updateCustomMapTimeOut);
+  updateCustomMapTimeOut = setTimeout(function(){
+    if(customMap.hasLayer(droughtOverlayMap) && map.hasLayer(customMap)){
+      customMap.removeLayer(droughtOverlayMap)
+      customMap.addLayer(droughtOverlayMap);
+    }
+  }, 500);
 }
 
 var map_control_name;
@@ -800,9 +811,10 @@ function updateSlider(){
 function updatePalette(selectName){
   for(i=0;i<256;i++)
   {
-    palette[i*3+0] = hexToRgb(palrgb(selectName)[i]).r;
-    palette[i*3+1] = hexToRgb(palrgb(selectName)[i]).g;
-    palette[i*3+2] = hexToRgb(palrgb(selectName)[i]).b;
+    palette[i*4+0] = hexToRgb(palrgb(selectName)[i]).r;
+    palette[i*4+1] = hexToRgb(palrgb(selectName)[i]).g;
+    palette[i*4+2] = hexToRgb(palrgb(selectName)[i]).b;
+    palette[i*4+3] = hexToRgb(palrgb(selectName)[i]).a;
   }
   return palette;
 }
@@ -972,7 +984,7 @@ function init(){
           controlCoordinates._update({latlng: latlng});
         }
       }
-      coor = extractCoorZoom(latlng, mapMaxZoom+4, launchPop, true)
+      coor = extractCoorZoom(latlng, levelcsv, launchPop, true)      
   }
 
   var returnClickPopUp = function(nothing, options){
