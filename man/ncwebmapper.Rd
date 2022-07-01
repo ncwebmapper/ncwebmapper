@@ -3,7 +3,6 @@
 \docType{package}
 \name{ncwebmapper}
 \alias{ncwebmapper}
-\alias{ncwebmapper-package}
 \title{ncwebmapper}
 \description{
 ncwebmapper

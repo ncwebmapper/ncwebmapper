@@ -21,7 +21,11 @@ html, body, #map { height: 100%; width: 100%; }
 
 .info.legend {
   min-width: 90px;
+  height: fit-content;
+  margin-top: auto;
+  margin-bottom: 0;
 }
+
 .legend i {
    width: 20px;
    height: 20px;

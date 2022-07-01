@@ -262,52 +262,54 @@ if(typeof parseDate === "undefined"){
   }
 }
 
-function showDygraph(data, filename, type){
-  var file = new Blob([data], {type: type});
-  url = URL.createObjectURL(file);
-  var graph = new Dygraph(
-    document.getElementById("popGraph"),
-    url,
-    {
-      digitsAfterDecimal: 3,
-      fillGraph: true,
-      delimiter: ";",
-      ylabel: legendTitle[varName],
-      xlabel: dateText,
-      xValueParser: function(str) {
-        if(typeof str == "string"){
-          var readTime = str;
-        }else{
-          var readTime = times[varName][str-1];
-        }
-        return parseDate(readTime);
-      },
-      axes: {
-        x: {
-          // pixelsPerLabel: 10,
-          valueFormatter: function(millis, opts, seriesName, dygraph, row, col) {
-            var fecha = new Date(millis);
-            return fecha.getDate() + "/" + (fecha.getMonth() + 1) + "/" + fecha.getFullYear() + " ";
-
-          },
-          axisLabelFormatter(number, granularity, opts, dygraph){
-            var fecha = new Date(number);
-            return (fecha.getMonth() + 1) + "/" + fecha.getFullYear() + " ";
+if(typeof showDygraph === "undefined"){
+  function showDygraph(data, filename, type){
+    var file = new Blob([data], {type: type});
+    url = URL.createObjectURL(file);
+    var graph = new Dygraph(
+      document.getElementById("popGraph"),
+      url,
+      {
+        digitsAfterDecimal: 3,
+        fillGraph: true,
+        delimiter: ";",
+        ylabel: legendTitle[varName],
+        xlabel: dateText,
+        xValueParser: function(str) {
+          if(typeof str == "string"){
+            var readTime = str;
+          }else{
+            var readTime = times[varName][str-1];
           }
+          return parseDate(readTime);
         },
-        y:{
-          valueFormatter: function(millis, opts, seriesName, dygraph, row, col) {
-            return " " + millis.toFixed(2);
+        axes: {
+          x: {
+            // pixelsPerLabel: 10,
+            valueFormatter: function(millis, opts, seriesName, dygraph, row, col) {
+              var fecha = new Date(millis);
+              return fecha.getDate() + "/" + (fecha.getMonth() + 1) + "/" + fecha.getFullYear() + " ";
+
+            },
+            axisLabelFormatter(number, granularity, opts, dygraph){
+              var fecha = new Date(number);
+              return (fecha.getMonth() + 1) + "/" + fecha.getFullYear() + " ";
+            }
+          },
+          y:{
+            valueFormatter: function(millis, opts, seriesName, dygraph, row, col) {
+              return " " + millis.toFixed(2);
+            }
           }
         }
       }
-    }
-  );
-  document.getElementById("popGraph").parentNode.style.width = "auto";
-  var popup = document.getElementById("popGraph").parentNode.parentNode.parentNode;
-  popup.style.left = window.innerWidth/2 - popup.offsetWidth -10 + "px";
-  popup.style.bottom =  - popup.offsetHeight/2 + "px";
-  document.getElementById("popGraph").parentNode.parentNode.nextSibling.style.display= "none";
+    );
+    document.getElementById("popGraph").parentNode.style.width = "auto";
+    var popup = document.getElementById("popGraph").parentNode.parentNode.parentNode;
+    popup.style.left = window.innerWidth/2 - popup.offsetWidth -10 + "px";
+    popup.style.bottom =  - popup.offsetHeight/2 + "px";
+    document.getElementById("popGraph").parentNode.parentNode.nextSibling.style.display= "none";
+  }
 }
 
 function urlCSV(x){
@@ -1063,6 +1065,11 @@ function init(){
     for (var i = 0; i < grades.length; i++) {
       div.innerHTML += '<i style="background:' + getColor(grades[i]) + '"></i> ';
       div.innerHTML += grades_text(grades, i, varName);
+    }
+
+    if(typeof showSubtitle !== "undefined" && typeof removeSubtitle !== "undefined"){
+      div.onmouseover = function() { showSubtitle(); };
+      div.onmouseout = function() { removeSubtitle(); };
     }
     return superdiv;
   };
