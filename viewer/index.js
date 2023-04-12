@@ -1252,7 +1252,7 @@ function init(){
     }
   });
 
-  if(generalInformationNames !== "undefined" & generalInformation !== "undefined"){
+  if(typeof generalInformationNames !== "undefined" & typeof generalInformation !== "undefined"){
     map_control_info = new L.Control.Info();
   }else{
     map_control_info = undefined;
