@@ -228,7 +228,7 @@ merge_csv <- function(folders, folder)
 						floor(j/10)%%10, j%%10, paste0(j, ".zip"))
 						file2 <- file.path(folder, "csv", floor(k/100)%%10,
 						floor(k/10)%%10, k%%10, paste0(k, ".zip"))
-						file.copy(file1, file2)
+						file.copy(file1, file2, overwrite = TRUE)
 					}
 				}
 			}
