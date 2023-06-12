@@ -36,59 +36,59 @@ if(typeof valueText === "undefined"){
 }
 
 if(typeof getVarMin === "undefined"){
-  function getVarMin__(varName){
+  var getVarMin__ = function getVarMin__(varName){
     return varMin[varName];
-  }
-  function getVarMin(varName){
+  };
+  var getVarMin = function getVarMin(varName){
     if(typeof getVarMin__extra === "undefined"){
       return getVarMin__(varName)
     }else{
       return getVarMin__extra(varName)
     }
-  }
+  };
 }
 
 if(typeof getVarMax === "undefined"){
-  function getVarMax__(varName){
+  var getVarMax__ = function getVarMax__(varName){
     return varMax[varName];
-  }
-  function getVarMax(varName){
+  };
+  var getVarMax = function getVarMax(varName){
     if(typeof getVarMax__extra === "undefined"){
       return getVarMax__(varName)
     }else{
       return getVarMax__extra(varName)
     }
-  }
+  };
 }
 
 if(typeof getNGrades === "undefined"){
-  function getNGrades__(varName){
+  var getNGrades__ = function getNGrades__(varName){
     return 9;
-  }
-  function getNGrades(varName){
+  };
+  var getNGrades = function getNGrades(varName){
     if(typeof getNGrades__extra === "undefined"){
       return getNGrades__(varName)
     }else{
       return getNGrades__extra(varName)
     }
-  }
+  };
 }
 
 var defaultVarName = Object.keys(varTitle)[0]; // Id of the variable to be displayed by default
 
 if(typeof palrgb === "undefined"){
-  function palrgb__(varName){    
+  var palrgb__ = function palrgb__(varName){    
     var palrgbArray = ["#FFFFFF", "#FFFFFD", "#FFFFFC", "#FFFFFA", "#FFFFF9", "#FFFFF8", "#FFFFF6", "#FFFFF5", "#FFFFF4", "#FFFFF2", "#FFFFF1", "#FFFFF0", "#FFFFEE", "#FFFFED", "#FFFFEC", "#FFFFEA", "#FFFFE9", "#FFFFE8", "#FFFFE6", "#FFFFE5", "#FFFFE4", "#FFFFE2", "#FFFFE1", "#FFFFE0", "#FFFFDE", "#FFFFDD", "#FFFFDC", "#FFFFDA", "#FFFFD9", "#FEFED8", "#FDFED6", "#FDFED5", "#FCFED3", "#FCFDD2", "#FBFDD1", "#FAFDCF", "#FAFDCE", "#F9FCCC", "#F8FCCB", "#F8FCC9", "#F7FCC8", "#F6FBC7", "#F6FBC5", "#F5FBC4", "#F5FBC2", "#F4FAC1", "#F3FAC0", "#F3FABE", "#F2FABD", "#F1F9BB", "#F1F9BA", "#F0F9B9", "#EFF9B7", "#EFF8B6", "#EEF8B4", "#EEF8B3", "#EDF8B1", "#ECF7B1", "#EBF7B1", "#E9F6B1", "#E8F6B1", "#E7F5B1", "#E5F5B1", "#E4F4B1", "#E3F4B1", "#E1F3B1", "#E0F3B1", "#DFF2B2", "#DDF2B2", "#DCF1B2", "#DBF0B2", "#D9F0B2", "#D8EFB2", "#D7EFB2", "#D5EEB2", "#D4EEB2", "#D3EDB3", "#D1EDB3", "#D0ECB3", "#CFECB3", "#CDEBB3", "#CCEBB3", "#CBEAB3", "#C9EAB3", "#C8E9B3", "#C7E9B4", "#C4E8B4", "#C1E7B4", "#BFE6B4", "#BCE5B4", "#BAE4B5", "#B7E3B5", "#B5E2B5", "#B2E1B5", "#B0E0B6", "#ADDFB6", "#ABDEB6", "#A8DDB6", "#A5DCB7", "#A3DBB7", "#A0DAB7", "#9ED9B7", "#9BD8B8", "#99D7B8", "#96D6B8", "#94D5B8", "#91D4B9", "#8FD3B9", "#8CD2B9", "#8AD1B9", "#87D0BA", "#84CFBA", "#82CEBA", "#7FCDBA", "#7DCCBB", "#7BCBBB", "#79CABB", "#76CABC", "#74C9BC", "#72C8BC", "#70C7BD", "#6EC6BD", "#6CC5BD", "#69C5BE", "#67C4BE", "#65C3BE", "#63C2BF", "#61C1BF", "#5EC1BF", "#5CC0BF", "#5ABFC0", "#58BEC0", "#56BDC0", "#53BDC1", "#51BCC1", "#4FBBC1", "#4DBAC2", "#4BB9C2", "#49B8C2", "#46B8C3", "#44B7C3", "#42B6C3", "#40B5C3", "#3FB4C3", "#3EB2C3", "#3CB1C3", "#3BB0C3", "#3AAFC3", "#38ADC3", "#37ACC2", "#36ABC2", "#35A9C2", "#33A8C2", "#32A7C2", "#31A5C2", "#30A4C2", "#2EA3C1", "#2DA1C1", "#2CA0C1", "#2A9FC1", "#299EC1", "#289CC1", "#279BC1", "#259AC0", "#2498C0", "#2397C0", "#2296C0", "#2094C0", "#1F93C0", "#1E92C0", "#1D91C0", "#1D8FBF", "#1D8DBE", "#1D8BBD", "#1D89BC", "#1D87BB", "#1E86BA", "#1E84BA", "#1E82B9", "#1E80B8", "#1E7FB7", "#1E7DB6", "#1F7BB5", "#1F79B4", "#1F77B4", "#1F75B3", "#1F74B2", "#2072B1", "#2070B0", "#206EAF", "#206CAF", "#206BAE", "#2069AD", "#2167AC", "#2165AB", "#2163AA", "#2162A9", "#2160A9", "#215EA8", "#225DA7", "#225BA6", "#225AA6", "#2258A5", "#2257A4", "#2255A3", "#2254A3", "#2252A2", "#2251A1", "#234FA1", "#234EA0", "#234C9F", "#234B9F", "#23499E", "#23489D", "#23469C", "#23459C", "#23439B", "#23429A", "#24409A", "#243F99", "#243D98", "#243C98", "#243A97", "#243996", "#243795", "#243695", "#243494", "#243393", "#233291", "#22328F", "#21318C", "#20308A", "#1F2F88", "#1E2E86", "#1D2E84", "#1C2D82", "#1B2C80", "#1A2B7E", "#192A7B", "#182979", "#172977", "#162875", "#152773", "#142671", "#13256F", "#12256D", "#11246B", "#102368", "#0F2266", "#0E2164", "#0D2162", "#0C2060", "#0B1F5E", "#0A1E5C", "#091D5A", "#081D58"];
     //palrgbArray = palrgbArray.reverse(); //Reverse colors
     return palrgbArray;
   };
-  function palrgb(varName){
+  var palrgb = function palrgb(varName){
     if(typeof palrgb__extra === "undefined"){
       return palrgb__(varName)
     }else{
       return palrgb__extra(varName)
     }
-  }
+  };
 }
 
 // Map config
@@ -229,7 +229,7 @@ function parseDates(input) { //"28/10/50"
 }
 
 if(typeof parseDate === "undefined"){
-  function parseDate__(input) { //"28/10/50"
+  var parseDate__ = function parseDate__(input) { //"28/10/50"
     if(typeof input !== "undefined"){
       input=input.replace('"', "").replace('"', "");
       if(input.indexOf('/')>-1){
@@ -252,18 +252,18 @@ if(typeof parseDate === "undefined"){
     }else{
       return null;
     }
-  }
-  function parseDate(input){
+  };
+  var parseDate = function parseDate(input){
     if(typeof parseDate__extra === "undefined"){
       return parseDate__(input)
     }else{
       return parseDate__extra(input)
     }
-  }
+  };
 }
 
 if(typeof showDygraph === "undefined"){
-  function showDygraph(data, filename, type){
+  var showDygraph = function showDygraph(data, filename, type){
     var file = new Blob([data], {type: type});
     url = URL.createObjectURL(file);
     var graph = new Dygraph(
@@ -309,7 +309,7 @@ if(typeof showDygraph === "undefined"){
     popup.style.left = window.innerWidth/2 - popup.offsetWidth -10 + "px";
     popup.style.bottom =  - popup.offsetHeight/2 + "px";
     document.getElementById("popGraph").parentNode.parentNode.nextSibling.style.display= "none";
-  }
+  };
 }
 
 function urlCSV(x){
@@ -822,7 +822,7 @@ function updatePalette(selectName){
 }
 
 if(typeof getColor === "undefined"){
-  function getColor__(d) {
+  var getColor__ = function getColor__(d) {
     // if(typeof getColor_ !== "undefined"){
     //   d = getColor_(d);
     // }
@@ -832,14 +832,14 @@ if(typeof getColor === "undefined"){
       time_i = 0
     }
     return pal2rgb(parseInt(255*(d-getVarMin(varName)[time_i])/(getVarMax(varName)[time_i]-getVarMin(varName)[time_i])), varName);
-  }
-  function getColor(varName){
+  };
+  var getColor = function getColor(varName){
     if(typeof getColor__extra === "undefined"){
       return getColor__(varName)
     }else{
       return getColor__extra(varName)
     }
-  }
+  };
 }
 
 function init(){
