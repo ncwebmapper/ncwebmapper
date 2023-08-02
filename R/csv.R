@@ -28,11 +28,11 @@
 #####################################################################
 
 #' @import zip
-#' @import sp
+#' @import sf
 #' @import ncdf4
 
 library(zip)
-library(sp)
+library(sf)
 library(ncdf4)
 
 # source("functions.R")

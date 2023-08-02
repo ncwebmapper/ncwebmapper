@@ -198,8 +198,9 @@ read_coords <- function(nc, epsg){
   coords <- expand.grid(lon, lat)
   colnames(coords) <- c("lon", "lat")
   coords <- SpatialPoints(coords, proj4string=CRS(paste0("+init=epsg:", epsg)))
-  coords <- spTransform(coords, CRS("+init=epsg:4326"))
-  coords <- coordinates(coords)
+  coords_sf <- st_as_sf(coords)
+  coords <- st_transform(coords_sf, CRS("+init=epsg:4326"))
+  coords <- st_coordinates(coords)
   colnames(coords) <- c("lon", "lat")
   return(coords)
 }

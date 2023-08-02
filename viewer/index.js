@@ -207,12 +207,14 @@ extractCoorZoom = function(latlng, z, functionValue, int){
 
 function downloadMarkerCSV(event){
   event.stopPropagation();
-  downloadCSV(clickPopup.value);
+  clickPopup.latlng = clickPopup._latlng;
+  downloadCSV(clickPopup);
 }
 
 function showMarkerCSV(event){
   event.stopPropagation();
-  showCSV(clickPopup.value);
+  clickPopup.latlng = clickPopup._latlng;
+  showCSV(clickPopup);
 }
 
 var popupGraph;
@@ -263,9 +265,7 @@ if(typeof parseDate === "undefined"){
 }
 
 if(typeof showDygraph === "undefined"){
-  var showDygraph = function showDygraph(data, filename, type){
-    var file = new Blob([data], {type: type});
-    url = URL.createObjectURL(file);
+  var showDygraph = function showDygraph(url){
     var graph = new Dygraph(
       document.getElementById("popGraph"),
       url,
@@ -312,88 +312,194 @@ if(typeof showDygraph === "undefined"){
   };
 }
 
-function urlCSV(x){
-  f1 = parseInt(x) % 10;
-  f2 = parseInt(parseInt(x)/10) % 10;
-  f3 = parseInt(parseInt(x)/100) % 10;
-  if(varName==null | varName=="NaN"){
-    addName = ""
-  }else{
-    addName = "/" + varName
-  }
-  url = "./maps" + addName + "/csv/" + f3 + "/"  + f2 + "/" + f1 + "/" + x + ".zip";
-  return url;
+// Combina los elementos de dos arrays como la función zip de Python
+function zip_python(...arrays) {
+    const maxLength = Math.max(...arrays.map(arr => arr.length));
+    let result = [];
+
+    for (let i = 0; i < maxLength; i++) {
+        result.push(arrays.map(arr => arr[i]));
+    }
+
+    return result;
+}
+
+// Hace una petición HTTP con la cabecera Range
+function rangeRequest(url, startByte, endByte) {
+    // Configuración de la petición HTTP
+    const headers = { 'Range': 'bytes=' + startByte + '-' + endByte };
+    const options = { headers };
+    return fetch(url, options)
+        .then(response => {
+            if (response.status === 206) {
+                // El servidor ha aceptado la petición parcial y devuelve un rango de bytes
+                return response.arrayBuffer();
+            } else {
+                // El servidor no ha aceptado la petición parcial y devuelve el archivo completo
+                return response.blob();
+            }
+        })
+        .then(arrayBuffer => {
+            return new Uint8Array(arrayBuffer);
+        })
+        .catch(error => {
+            console.error('Error en la petición: ', error);
+        });
+}
+
+// Conversión de coordenadas entre EPSG:4326 - WGS 84 y EPSG:25830 - ETRS89
+function convert2NcCoords(lnglat) {
+    return proj4(mapEnv.projection, projection[varName][0], [lnglat.lng, lnglat.lat]);
+}
+
+// Conversión de coordenadas entre EPSG:25830 - ETRS89 y EPSG:4326 - WGS 84
+function convert2MapCoords(xy) {
+    return proj4(projection[varName][0], mapEnv.projection, [xy.x, xy.y]);
+}
+
+// Cálculo de índices de las dimensiones lon y lat desde las coordenadas geo
+// en las unidades utilizadas dentro del NC
+function locatePixelIndexes(ncCoords) {
+    const lonIndex = Math.round((ncCoords[0] - lon_min[varName][0]) / ((lon_max[varName][0] - lon_min[varName][0]) / (lon_num[varName][0] - 1)));
+    const latIndex = Math.round((ncCoords[1] - lat_min[varName][0]) / ((lat_max[varName][0] - lat_min[varName][0]) / (lat_num[varName][0] - 1)));
+    return [lonIndex, latIndex];
+}
+
+// Obtiene el tamaño en bytes de los tipos de datos utilizados en el binario
+// que contiene la información para localizar los chunks y el tipo de la variable
+// principal que viaja en el propio chunk
+// https://github.com/lyngklip/structjs
+function getTypeSize(type) {
+    switch (type) { // Se indica C type en comentarios
+        case 'c':   // char
+        case 'b':   // signed char
+        case 'B':   // unsigned char
+        case '?':   // _Bool
+            return 1;
+            break;
+        case 'h':   // short
+        case 'H':   // unsigned short
+        case 'e':   // IEEE 754 binary16 "half precision"
+            return 2;
+            break;
+        case 'i':   // int
+        case "I":   // unsigned int
+        case "l":   // long
+        case "L":   // unsigned long
+        case "f":   // float
+            return 4;
+            break;
+        case "q":   // long long
+        case "Q":   // unsigned long long
+        case "d":   // double
+            return 8;
+            break;
+        default:
+            return 0;
+    }
 }
 
 //x = "20"; y = "12"
-function downloadCSV(x, downloadFile=true){
-  var request;
-  var arrayBuffer;
-  var bytes;
-  var asciistring;
+function downloadCSV(event, downloadFile=true){
+  var pixelPoligon = null;
+  let chunkDataStruct = struct('<' + offset_type + size_type);
+  let chunkStruct = struct('<' + var_type[varName][0]);
 
-  // Copiado de https://stackoverflow.com/questions/13405129/javascript-create-and-save-file
-  // Function to download data to a file
-  function download(data, filename, type) {
-    var file = new Blob([data], {type: type});
-    if (window.navigator.msSaveOrOpenBlob) // IE10+
-     window.navigator.msSaveOrOpenBlob(file, filename);
-    else { // Others
-     var a = document.createElement("a"),
-     url = URL.createObjectURL(file);
-     a.href = url;
-     a.download = filename;
-     document.body.appendChild(a);
-     a.click();
-     setTimeout(function() {
-       document.body.removeChild(a);
-       window.URL.revokeObjectURL(url);
-     }, 0);
-    }
+  const mapCoords = event.latlng;
+  const ncCoords = convert2NcCoords(mapCoords);
+  const pixelIndexes = locatePixelIndexes(ncCoords);
+  // Cálculo coordenadas centro pixel en EPSG:4326 - WGS 84
+  const x = pixelIndexes[0] * (lon_max[varName][0] - lon_min[varName][0]) / (lon_num[varName][0] - 1) + lon_min[varName][0];
+  const y = pixelIndexes[1] * (lat_max[varName][0] - lat_min[varName][0]) / (lat_num[varName][0] - 1) + lat_min[varName][0];
+  const mapCoordsCenter = convert2MapCoords({ "x": x, "y": y });
+
+  // Comprobación de si hemos hecho click dentro del área cubierta por el NC
+  if (pixelIndexes[0] >= 0 && pixelIndexes[0] < lon_num[varName][0] &&
+      pixelIndexes[1] >= 0 && pixelIndexes[1] < lat_num[varName][0]) {
+      // Índice correlativo del pixel
+      const chunkIndex = pixelIndexes[0] + pixelIndexes[1] * lon_num[varName][0];
+      // Cálculo de la dirección de la información del chunk dentro del fichero binario
+      // que contiene el directorio de chunks
+      const chunkDataSize = getTypeSize(offset_type) + getTypeSize(size_type);
+      const chunkDataDir = chunkIndex * chunkDataSize;
+
+      // Petición range request de la información del chunk (offset y size)
+      rangeRequest('./nc/' + varName + '-t.bin', chunkDataDir, chunkDataDir + chunkDataSize - 1)
+          .then(chunkData => {
+              let [chunkOffset, chunkSize] = chunkDataStruct.unpack(chunkData.buffer);
+              // Petición range request del chunk
+              rangeRequest('./nc/' + varName + '-t.nc', BigInt(chunkOffset), BigInt(chunkOffset) + BigInt(chunkSize) - 1n)
+                  .then(chunk => {
+                      // Descomprir los datos recibidos (si están comprimidos)
+                      const uncompressedArray = (compressed[varName][0] ? pako.inflate(chunk) : chunk);
+                      // Crear un array de valores a partir de los bytes
+                      const floatArray = Array.from(chunkStruct.iter_unpack(uncompressedArray.buffer), x => x[0]);                                // Convertir los valores de coma flotante en una cadena de texto con
+                      // formato ASCII
+                      let asciiResult = "days since 1970-01-01;" + varName + "\n";    // Cabecera CSV
+                      baseData = zip_python(times[varName], floatArray);
+                      // Flag de control de pixel vacío (todas las fechas NaN, normalmente por caer en mar)
+                      let download = false;
+                      baseData.forEach((value, index, array) => {
+                          if (!isNaN(value[1])) download = true;
+                          asciiResult += value[0];
+                          asciiResult += ';';
+                          if (['e', 'f', 'd'].includes(var_type[varName][0]))
+                              asciiResult += Math.round(value[1] * 10) / 10 + "\n";
+                          else
+                              asciiResult += value[1] + "\n";
+                      });
+
+                      // Dibujado de pixel y descarga de CSV
+                      if (download) {
+                          // Dibujamos el pixel en el que se ha hecho click
+                          if (pixelPoligon) pixelPoligon.remove();
+                          // Cálculo coordenadas esquinas pixel en EPSG:4326 - WGS 84
+                          const deltaX = (lon_max[varName][0] - lon_min[varName][0]) / (lon_num[varName][0] - 1) / 2;
+                          const deltaY = (lat_max[varName][0] - lat_min[varName][0]) / (lat_num[varName][0] - 1) / 2;
+                          const mapCoordsTL = convert2MapCoords({ "x": x - deltaX, "y": y - deltaY });
+                          const mapCoordsBL = convert2MapCoords({ "x": x - deltaX, "y": y + deltaY });
+                          const mapCoordsBR = convert2MapCoords({ "x": x + deltaX, "y": y + deltaY });
+                          const mapCoordsTR = convert2MapCoords({ "x": x + deltaX, "y": y - deltaY });
+                          pixelPoligon = L.polygon([
+                              [mapCoordsTL[1], mapCoordsTL[0]],
+                              [mapCoordsBL[1], mapCoordsBL[0]],
+                              [mapCoordsBR[1], mapCoordsBR[0]],
+                              [mapCoordsTR[1], mapCoordsTR[0]],
+                              [mapCoordsTL[1], mapCoordsTL[0]]
+                          ]);
+                          pixelPoligon.addTo(map);
+
+                          // Crear un objeto Blob con la cadena de texto
+                          const blob = new Blob([asciiResult], { type: 'text/plain' });
+                          // Crear una URL temporal y descargar el archivo
+                          const url = window.URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = mapCoordsCenter[0].toFixed(6) + '_' + mapCoordsCenter[1].toFixed(6) + '.csv';
+                          document.body.appendChild(link);
+                          if(downloadFile){
+                            link.click();
+                            // Liberar la URL temporal
+                            window.URL.revokeObjectURL(url);
+                          }else{
+                            popupGraph.setLatLng(map.getCenter());
+                            popupGraph.openOn(map);
+                            showDygraph(url);
+                          }
+                          // Borramos el dibujo del pixel
+                          poligonTimeOut = setTimeout(function(){
+                            if (pixelPoligon) pixelPoligon.remove();
+                          }, 200);                          
+                      }
+                  })
+                  .catch(error => {
+                      console.error('Error: ', error);
+                  });
+          })
+          .catch(error => {
+              console.error('Error: ', error);
+          });
   }
-
- onload = function (e) {
-    arrayBuffer = request.responseText;
-    bytes = new Uint8Array(arrayBuffer.length);
-    // Walk through each character in the stream.
-    for (var fileidx = 0; fileidx < arrayBuffer.length; fileidx++) {
-      bytes[fileidx] = arrayBuffer.charCodeAt(fileidx) & 0xff;
-    }
-
-    var blob = new Blob([bytes], {type: 'application/zip'});
-
-    zip.createReader(new zip.BlobReader(blob), function(zipReader){
-      zipReader.getEntries(function(entries){
-        var filename = entries[0].filename;
-        entries[0].getData(new zip.BlobWriter('text/plain'), function(data) {
-          if(downloadFile){
-            download(data, filename, 'text/plain');
-          }else{
-            popupGraph.setLatLng(map.getCenter());
-            popupGraph.openOn(map);
-            showDygraph(data, filename, 'text/plain');
-          }
-        });
-      });
-    }, function(error) {
-      errorMessage = errorText;
-      alert(errorMessage);
-    });
-  }
-
-  onerror = function (e) {
-    // alert("Problema en la descarga del CSV.");
-  }
-
-  var request = new XMLHttpRequest();
-
-  request.onerror = onerror;
-  request.onload = onload;
-  url = urlCSV(x);
-  asynchronous = true;
-  request.open('GET', url, asynchronous);
-  request.overrideMimeType('text\/plain; charset=x-user-defined');
-  request.send(null);
 }
 
 function showInfo(value) {
@@ -962,7 +1068,7 @@ function init(){
   };
   map.whenReady(onMapLoad);
 
-  function showClickPopup(event) {
+  function showClickPopup(event) {    
     dblclick = false;
     setTimeout(function() {
       if(times[varName].length>1){
@@ -976,7 +1082,8 @@ function init(){
 
   function showPopup(latlng, update=false) {
       var launchPop = function(value){
-        if(value > 0 | typeof value == "string"){
+        // if(value > 0 | typeof value == "string"){
+        if(!isNaN(value)){
           clickPopup
           .setLatLng(latlng)
           .addTo(map)
@@ -986,7 +1093,8 @@ function init(){
           controlCoordinates._update({latlng: latlng});
         }
       }
-      coor = extractCoorZoom(latlng, levelcsv, launchPop, true)      
+      // coor = extractCoorZoom(latlng, levelcsv, launchPop, true);
+      coor = extractCoorZoom(latlng, zoom, launchPop, false);
   }
 
   var returnClickPopUp = function(nothing, options){

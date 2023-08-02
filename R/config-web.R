@@ -28,12 +28,12 @@
 #####################################################################
 
 #' @import js
-#' @import sp
+#' @import sf
 #' @import ncdf4
 #' @import raster
 
 library(js)
-library(sp)
+library(sf)
 library(ncdf4)
 library(raster)
 
@@ -218,6 +218,9 @@ arrayRtojs <- function(name, value, type="character"){
     if(type=="character"){
       sep <- "'"
       values <- value[[t]]
+    }else if(type=="date"){
+      sep <- "'"
+      values <- as.Date(value[[t]])
     }else{
       sep <- ""
       values <- round(value[[t]], digits=3)
@@ -312,7 +315,7 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
   lat_lon.write <- paste0("var marginBounds = L.latLngBounds(L.latLng(", infoJs$latIni, ", ", infoJs$lonIni, "), L.latLng(", infoJs$latEnd, ", ", infoJs$lonEnd, "));\n")
   text.js <- paste(text.js, lat_lon.write)
  
-  text.js <- paste(text.js, arrayRtojs(name="times", value=infoJs$times))
+  text.js <- paste(text.js, arrayRtojs(name="times", value=infoJs$times, type="date"))
   text.js <- paste0(text.js, " var showDonwloadCoordinates = ", tolower(showDonwloadCoordinates), ";\n")
 
   # Niveles de zoom
