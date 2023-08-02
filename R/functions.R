@@ -200,6 +200,7 @@ read_coords <- function(nc, epsg){
   coords <- SpatialPoints(coords, proj4string=CRS(paste0("+init=epsg:", epsg)))
   coords <- spTransform(coords, CRS("+init=epsg:4326"))
   coords <- coordinates(coords)
+  colnames(coords) <- c("lon", "lat")
   return(coords)
 }
 
