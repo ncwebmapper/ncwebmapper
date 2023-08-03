@@ -435,7 +435,7 @@ function downloadCSV(event, downloadFile=true){
                       // Crear un array de valores a partir de los bytes
                       const floatArray = Array.from(chunkStruct.iter_unpack(uncompressedArray.buffer), x => x[0]);                                // Convertir los valores de coma flotante en una cadena de texto con
                       // formato ASCII
-                      let asciiResult = "days since 1970-01-01;" + varName + "\n";    // Cabecera CSV
+                      let asciiResult = "dates;" + varName + "\n";    // Cabecera CSV
                       baseData = zip_python(times[varName], floatArray);
                       // Flag de control de pixel vacío (todas las fechas NaN, normalmente por caer en mar)
                       let download = false;
