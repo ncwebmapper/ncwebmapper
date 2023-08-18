@@ -2,6 +2,7 @@
 #' @author 
 #' Borja Latorre Garcés \url{http://eead.csic.es/home/staffinfo?Id=215}; Soil and Water, EEAD, CSIC \url{http://www.eead.csic.es}
 #' Fergus Reig Gracia \url{http://fergusreig.es}; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC \url{http://www.ipe.csic.es/hidrologia-ambiental}
+#' Eduardo Moreno Lamana \url{https://apuntes.eduardofilo.es}; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC \url{http://www.ipe.csic.es/hidrologia-ambiental}
 #' 
 #' @details
 #' \tabular{ll}{
@@ -30,9 +31,14 @@
 #####################################################################
 
 #' @import ncdf4
+#' @import hdf5r
 
 library(ncdf4)
 library(hdf5r)
+
+# Constants
+OFFSET_TYPE_SIZE = 8
+SIZE_TYPE_SIZE = 4
 
 #' Create the new netCDF file with chunk dimensions that favor obtaining temporal series
 #' for each pixel.
@@ -40,10 +46,12 @@ library(hdf5r)
 #' @param out_file netCDF file with the same information as the original but with new chunk structure.
 #' @param lon_by Number of pixels horizontally that will be read as a block during the read/write loop. -1 to read all at once.
 #' @param lat_by Number of pixels vertically that will be read as a block during the read/write loop. -1 to read all at once.
+#' @param lon_name Name of longitude dimension.
+#' @param lat_name Name of latitude dimension.
 #' @export
 #' @examples
-#' write_nc_chunk_t(in_file="/path/ETo.nc", out_file="/path/ETo-t.nc", lon_by=100, lat_by=100)
-write_nc_chunk_t = function(in_file, out_file, lon_by = -1, lat_by = -1) {
+#' write_nc_chunk_t(in_file="/path/ETo.nc", out_file="/path/ETo-t.nc", lon_by=100, lat_by=100, lon_name = "lon", lat_name = "lat")
+write_nc_chunk_t = function(in_file, out_file, lon_by = -1, lat_by = -1, lon_name = "lon", lat_name = "lat") {
     # Open the original netCDF file
     nc_in_file = nc_open(in_file)
 
@@ -53,14 +61,14 @@ write_nc_chunk_t = function(in_file, out_file, lon_by = -1, lat_by = -1) {
     global_att = ncatt_get(nc_in_file, 0)
 
     # Read attributes of dimensions and variable
-    lon_longname_att = ncatt_get(nc_in_file, "lon", "long_name")
+    lon_longname_att = ncatt_get(nc_in_file, lon_name, "long_name")
     lon_longname = if(lon_longname_att$hasatt) lon_longname_att$value else "longitude"
-    lon_units_att = ncatt_get(nc_in_file, "lon", "units")
+    lon_units_att = ncatt_get(nc_in_file, lon_name, "units")
     lon_units = if(lon_units_att$hasatt) lon_units_att$value else "m"
 
-    lat_longname_att = ncatt_get(nc_in_file, "lat", "long_name")
+    lat_longname_att = ncatt_get(nc_in_file, lat_name, "long_name")
     lat_longname = if(lat_longname_att$hasatt) lat_longname_att$value else "latitude"
-    lat_units_att = ncatt_get(nc_in_file, "lat", "units")
+    lat_units_att = ncatt_get(nc_in_file, lat_name, "units")
     lat_units = if(lat_units_att$hasatt) lat_units_att$value else "m"
 
     time_longname_att = ncatt_get(nc_in_file, "time", "long_name")
@@ -69,15 +77,17 @@ write_nc_chunk_t = function(in_file, out_file, lon_by = -1, lat_by = -1) {
     time_units = if(time_units_att$hasatt) time_units_att$value else "days since 1970-01-01"
     time_calendar_att = ncatt_get(nc_in_file, "time", "calendar")
     time_calendar = if(time_calendar_att$hasatt) time_calendar_att$value else "gregorian"
+    time_unlim = nc_in_file$dim$time$unlim
 
     var_longname_att = ncatt_get(nc_in_file, var_name, "long_name")
-    var_longname = if(var_longname_att$hasatt) var_longname_att$value else "?"
+    var_longname = if(var_longname_att$hasatt) var_longname_att$value else NULL
     var_units_att = ncatt_get(nc_in_file, var_name, "units")
-    var_units = if(var_units_att$hasatt) var_units_att$value else "?"
+    var_units = if(var_units_att$hasatt) var_units_att$value else ""
+    var_missval = nc_in_file$var[[var_name]]$missval
 
     # Reads the dimensions of the original file
-    lon_data = ncvar_get(nc_in_file, "lon")
-    lat_data = ncvar_get(nc_in_file, "lat")
+    lon_data = ncvar_get(nc_in_file, lon_name)
+    lat_data = ncvar_get(nc_in_file, lat_name)
     time_data = ncvar_get(nc_in_file, "time")
 
     # Sizes of dimensions
@@ -90,12 +100,17 @@ write_nc_chunk_t = function(in_file, out_file, lon_by = -1, lat_by = -1) {
     lat_by = if (lat_by < 1 || lat_by >= lat_num) lat_num else lat_by
 
     # Define the dimensions for the final file
-    lon = ncdim_def("lon", lon_units, lon_data, longname=lon_longname)
-    lat = ncdim_def("lat", lat_units, lat_data, longname=lat_longname)
-    time = ncdim_def("time", time_units, time_data, longname=time_longname,
-                     calendar=time_calendar)
-    var = ncvar_def(var_name, var_units, list(lon, lat, time), chunksizes=c(1,1,time_num),
-                     longname=var_longname, compression=9)
+    lon = ncdim_def(lon_name, lon_units, lon_data, longname=lon_longname)
+    lat = ncdim_def(lat_name, lat_units, lat_data, longname=lat_longname)
+    time = ncdim_def("time", time_units, time_data, unlim=time_unlim,
+                     longname=time_longname, calendar=time_calendar)
+    args = list(name=var_name, units=var_units, dim=list(lon, lat, time),
+                chunksizes=c(1,1,time_num), compression=9)
+    if (!is.null(var_longname))
+        args$longname = var_longname
+    if (!is.null(var_missval))
+        args$missval = var_missval
+    var = do.call(ncvar_def, args)
 
     # Final file creation
     nc_out_file = nc_create(out_file, list(var), force_v4 = TRUE)
@@ -132,10 +147,12 @@ write_nc_chunk_t = function(in_file, out_file, lon_by = -1, lat_by = -1) {
 #' @param in_file Original netCDF file
 #' @param out_file netCDF file with the same information as the original but with new chunk structure.
 #' @param time_by Number of dates that will be read as a block during the read/write loop. -1 to read all at once.
+#' @param lon_name Name of longitude dimension.
+#' @param lat_name Name of latitude dimension.
 #' @export
 #' @examples
-#' write_nc_chunk_xy(in_file="/path/ETo.nc", out_file="/path/ETo-xy.nc", time_by=100)
-write_nc_chunk_xy = function(in_file, out_file, time_by = -1) {
+#' write_nc_chunk_xy(in_file="/path/ETo.nc", out_file="/path/ETo-xy.nc", time_by=100, lon_name = "lon", lat_name = "lat")
+write_nc_chunk_xy = function(in_file, out_file, time_by = -1, lon_name = "lon", lat_name = "lat") {
     # Open the original netCDF file
     nc_in_file = nc_open(in_file)
 
@@ -145,14 +162,14 @@ write_nc_chunk_xy = function(in_file, out_file, time_by = -1) {
     global_att = ncatt_get(nc_in_file, 0)
 
     # Read attributes of dimensions and variable
-    lon_longname_att = ncatt_get(nc_in_file, "lon", "long_name")
+    lon_longname_att = ncatt_get(nc_in_file, lon_name, "long_name")
     lon_longname = if(lon_longname_att$hasatt) lon_longname_att$value else "longitude"
-    lon_units_att = ncatt_get(nc_in_file, "lon", "units")
+    lon_units_att = ncatt_get(nc_in_file, lon_name, "units")
     lon_units = if(lon_units_att$hasatt) lon_units_att$value else "m"
 
-    lat_longname_att = ncatt_get(nc_in_file, "lat", "long_name")
+    lat_longname_att = ncatt_get(nc_in_file, lat_name, "long_name")
     lat_longname = if(lat_longname_att$hasatt) lat_longname_att$value else "latitude"
-    lat_units_att = ncatt_get(nc_in_file, "lat", "units")
+    lat_units_att = ncatt_get(nc_in_file, lat_name, "units")
     lat_units = if(lat_units_att$hasatt) lat_units_att$value else "m"
 
     time_longname_att = ncatt_get(nc_in_file, "time", "long_name")
@@ -161,15 +178,17 @@ write_nc_chunk_xy = function(in_file, out_file, time_by = -1) {
     time_units = if(time_units_att$hasatt) time_units_att$value else "days since 1970-01-01"
     time_calendar_att = ncatt_get(nc_in_file, "time", "calendar")
     time_calendar = if(time_calendar_att$hasatt) time_calendar_att$value else "gregorian"
+    time_unlim = nc_in_file$dim$time$unlim
 
     var_longname_att = ncatt_get(nc_in_file, var_name, "long_name")
-    var_longname = if(var_longname_att$hasatt) var_longname_att$value else "?"
+    var_longname = if(var_longname_att$hasatt) var_longname_att$value else NULL
     var_units_att = ncatt_get(nc_in_file, var_name, "units")
-    var_units = if(var_units_att$hasatt) var_units_att$value else "?"
+    var_units = if(var_units_att$hasatt) var_units_att$value else ""
+    var_missval = nc_in_file$var[[var_name]]$missval
 
     # Reads the dimensions of the original file
-    lon_data = ncvar_get(nc_in_file, "lon")
-    lat_data = ncvar_get(nc_in_file, "lat")
+    lon_data = ncvar_get(nc_in_file, lon_name)
+    lat_data = ncvar_get(nc_in_file, lat_name)
     time_data = ncvar_get(nc_in_file, "time")
 
     # Sizes of dimensions
@@ -181,12 +200,17 @@ write_nc_chunk_xy = function(in_file, out_file, time_by = -1) {
     time_by = if (time_by < 1 || time_by >= time_num) time_num else time_by
  
     # Define the dimensions for the final file
-    lon = ncdim_def("lon", lon_units, lon_data, longname=lon_longname)
-    lat = ncdim_def("lat", lat_units, lat_data, longname=lat_longname)
-    time = ncdim_def("time", time_units, time_data, longname=time_longname,
-                     calendar=time_calendar)
-    var = ncvar_def(var_name, var_units, list(lon, lat, time), chunksizes=c(lon_num,lat_num,1),
-                     longname=var_longname, compression=9)
+    lon = ncdim_def(lon_name, lon_units, lon_data, longname=lon_longname)
+    lat = ncdim_def(lat_name, lat_units, lat_data, longname=lat_longname)
+    time = ncdim_def("time", time_units, time_data, unlim=time_unlim,
+                     longname=time_longname, calendar=time_calendar)
+    args = list(name=var_name, units=var_units, dim=list(lon, lat, time),
+                chunksizes=c(lon_num,lat_num,1), compression=9)
+    if (!is.null(var_longname))
+        args$longname = var_longname
+    if (!is.null(var_missval))
+        args$missval = var_missval
+    var = do.call(ncvar_def, args)
 
     # Final file creation
     nc_out_file = nc_create(out_file, list(var), force_v4 = TRUE)
@@ -253,12 +277,14 @@ get_struct_typecode = function(nc_type) {
 #' Create the JSON ncEnv with meta-information about the netCDF file.
 #' @param in_file Original netCDF file
 #' @param folder folder for JSON file
+#' @param lon_name Name of longitude dimension.
+#' @param lat_name Name of latitude dimension.
 #' @param ncEnv previous JSON
 #' @param epsg file epsg
 #' @export
 #' @examples
 #' write_nc_env(in_file="/path/ETo.nc", out_file="/path/ncEnv.js")
-write_nc_env = function(in_file, folder, ncEnv, epsg) {
+write_nc_env = function(in_file, folder, lon_name = "lon", lat_name = "lat", ncEnv, epsg) {
     # Open the original netCDF file
     nc_in_file = nc_open(in_file)
 
@@ -289,11 +315,11 @@ write_nc_env = function(in_file, folder, ncEnv, epsg) {
         ncEnv <- list(lon_min=list(), lon_max=list(), lon_num=list(), lat_min=list(), lat_max=list(), lat_num=list(), var_type=list(), compressed=list(), offset_type="Q", size_type="I", projection=list())
     }
 
-    lon_data = ncvar_get(nc_in_file, "lon")
+    lon_data = ncvar_get(nc_in_file, lon_name)
     ncEnv$lon_min[[varName]] = lon_data[1]
     ncEnv$lon_max[[varName]] = lon_data[length(lon_data)]
     ncEnv$lon_num[[varName]] = length(lon_data)
-    lat_data = ncvar_get(nc_in_file, "lat")
+    lat_data = ncvar_get(nc_in_file, lat_name)
     ncEnv$lat_min[[varName]] = lat_data[1]
     ncEnv$lat_max[[varName]] = lat_data[length(lat_data)]
     ncEnv$lat_num[[varName]] = length(lat_data)
@@ -331,12 +357,12 @@ write_nc_env = function(in_file, folder, ncEnv, epsg) {
 #' @examples
 #' write_nc_t_chunk_dir(in_file="/path/ETo-t.nc", out_file="/path/ETo-t.bin")
 write_nc_t_chunk_dir = function(in_file, out_file) {
-    # Find out name of main variable
+    # Find out name of main variable with ncdf4
     nc_in_file = nc_open(in_file)
     var_name = nc_in_file$var[[1]]$name
     nc_close(nc_in_file)
 
-    # Open the netCDF file
+    # Open the netCDF file with hdf5r
     nc_in_file = h5file(in_file, mode="r")
 
     # Open a binary file in write mode
@@ -350,10 +376,48 @@ write_nc_t_chunk_dir = function(in_file, out_file) {
         for (x in seq(1, lon_num)) {
             chunk_info = nc_in_file[[var_name]]$get_chunk_info_by_coord(c(0,y-1,x-1))
             # Write the number pairs to the binary file
-            writeBin(as.integer(chunk_info$addr), bin_out_file, size = 8, endian = "little")
-            writeBin(as.integer(chunk_info$size), bin_out_file, size = 4, endian = "little")
+            writeBin(as.integer(chunk_info$addr), bin_out_file, size = OFFSET_TYPE_SIZE, endian = "little")
+            writeBin(as.integer(chunk_info$size), bin_out_file, size = SIZE_TYPE_SIZE, endian = "little")
         }
     }
+
+    # Close files
+    close(bin_out_file)
+    nc_in_file$close()
+}
+
+
+#' Create the binary chunks directory for the nc oriented to the time series of each pixel
+#' using the new H5Dchunk_iter function (https://docs.hdfgroup.org/hdf5/v1_14/group___h5_d.html#title6).
+#' @param in_file netCDF file with chunking oriented to the time series of each pixel. 
+#' @param out_file Chunks directory file.
+#' @export
+#' @examples
+#' write_nc_t_chunk_dir_iter(in_file="/path/ETo-t.nc", out_file="/path/ETo-t.bin")
+write_nc_t_chunk_dir_iter = function(in_file, out_file) {
+    # Find out name of main variable with ncdf4
+    nc_in_file = nc_open(in_file)
+    var_name = nc_in_file$var[[1]]$name
+    nc_close(nc_in_file)
+
+    # Open the netCDF file with hdf5r
+    nc_in_file = h5file(in_file, mode="r")
+
+    # Open a binary file in write mode
+    bin_out_file = file(out_file, "wb")
+
+    lon_num = nc_in_file[[var_name]]$dims[[1]]
+    lat_num = nc_in_file[[var_name]]$dims[[2]]
+    time_num = nc_in_file[[var_name]]$dims[[3]]
+
+    nc_in_file[[var_name]]$chunk_iter(function(chunk_info){
+        lat_index = chunk_info$offset[[2]]
+        lon_index = chunk_info$offset[[3]]
+        dir_pos = (OFFSET_TYPE_SIZE + SIZE_TYPE_SIZE) * (lon_index + lat_index * lon_num)
+        seek(bin_out_file, dir_pos)
+        writeBin(as.integer(chunk_info$addr), bin_out_file, size = OFFSET_TYPE_SIZE, endian = "little")
+        writeBin(as.integer(chunk_info$size), bin_out_file, size = SIZE_TYPE_SIZE, endian = "little")
+    })
 
     # Close files
     close(bin_out_file)
@@ -368,12 +432,12 @@ write_nc_t_chunk_dir = function(in_file, out_file) {
 #' @examples
 #' write_nc_xy_chunk_dir(in_file="/path/ETo-xy.nc", out_file="/path/ETo-xy.bin")
 write_nc_xy_chunk_dir = function(in_file, out_file) {
-    # Find out name of main variable
+    # Find out name of main variable with ncdf4
     nc_in_file = nc_open(in_file)
     var_name = nc_in_file$var[[1]]$name
     nc_close(nc_in_file)
 
-    # Open the netCDF file
+    # Open the netCDF file with hdf5r
     nc_in_file = h5file(in_file, mode="r")
 
     # Open a binary file in write mode
@@ -386,9 +450,46 @@ write_nc_xy_chunk_dir = function(in_file, out_file) {
     for (t in seq(1, time_num)) {
         chunk_info = nc_in_file[[var_name]]$get_chunk_info_by_coord(c(t-1,0,0))
         # Write the number pairs to the binary file
-        writeBin(as.integer(chunk_info$addr), bin_out_file, size = 8, endian = "little")
-        writeBin(as.integer(chunk_info$size), bin_out_file, size = 4, endian = "little")
+        writeBin(as.integer(chunk_info$addr), bin_out_file, size = OFFSET_TYPE_SIZE, endian = "little")
+        writeBin(as.integer(chunk_info$size), bin_out_file, size = SIZE_TYPE_SIZE, endian = "little")
     }
+
+    # Close files
+    close(bin_out_file)
+    nc_in_file$close()
+}
+
+
+#' Create the binary chunks directory for the nc oriented to the maps of each date
+#' using the new H5Dchunk_iter function (https://docs.hdfgroup.org/hdf5/v1_14/group___h5_d.html#title6).
+#' @param in_file netCDF file with chunking oriented to the maps of each date.
+#' @param out_file Chunks directory file.
+#' @export
+#' @examples
+#' write_nc_xy_chunk_dir_iter(in_file="/path/ETo-xy.nc", out_file="/path/ETo-xy.bin")
+write_nc_xy_chunk_dir_iter = function(in_file, out_file) {
+    # Find out name of main variable with ncdf4
+    nc_in_file = nc_open(in_file)
+    var_name = nc_in_file$var[[1]]$name
+    nc_close(nc_in_file)
+
+    # Open the netCDF file with hdf5r
+    nc_in_file = h5file(in_file, mode="r")
+
+    # Open a binary file in write mode
+    bin_out_file = file(out_file, "wb")
+
+    lon_num = nc_in_file[[var_name]]$dims[[1]]
+    lat_num = nc_in_file[[var_name]]$dims[[2]]
+    time_num = nc_in_file[[var_name]]$dims[[3]]
+
+    nc_in_file[[var_name]]$chunk_iter(function(chunk_info){
+        time_index = chunk_info$offset[[1]]
+        dir_pos = (OFFSET_TYPE_SIZE + SIZE_TYPE_SIZE) * time_index
+        seek(bin_out_file, dir_pos)
+        writeBin(as.integer(chunk_info$addr), bin_out_file, size = OFFSET_TYPE_SIZE, endian = "little")
+        writeBin(as.integer(chunk_info$size), bin_out_file, size = SIZE_TYPE_SIZE, endian = "little")
+    })
 
     # Close files
     close(bin_out_file)
@@ -429,6 +530,8 @@ write_nc_xy_chunk_dir = function(in_file, out_file) {
 #file = file.path(nc_route, ncFile)
 #bin_file = file.path(nc_route, create_nc_name(ncFile, ext="bin"))
 #write_nc_t_chunk_dir(in_file = file, out_file = bin_file)
+#  or
+#write_nc_t_chunk_dir_iter(in_file = file, out_file = bin_file)
 
 
 #nc_route = "/home/docker/workdir/proto_eto/viewer/nc"
@@ -436,3 +539,5 @@ write_nc_xy_chunk_dir = function(in_file, out_file) {
 #file = file.path(nc_route, ncFile)
 #bin_file = file.path(nc_route, create_nc_name(ncFile, ext="bin"))
 #write_nc_xy_chunk_dir(in_file = file, out_file = bin_file)
+#  or
+#write_nc_xy_chunk_dir_iter(in_file = file, out_file = bin_file)
