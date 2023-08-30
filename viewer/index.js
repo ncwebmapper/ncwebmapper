@@ -1068,7 +1068,7 @@ function init(){
   };
   map.whenReady(onMapLoad);
 
-  function showClickPopup(event) {    
+  function showClickPopup(event) {
     dblclick = false;
     setTimeout(function() {
       if(times[varName].length>1){
