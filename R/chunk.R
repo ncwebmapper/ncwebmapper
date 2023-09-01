@@ -312,7 +312,7 @@ write_nc_env = function(in_file, folder, lon_name = "lon", lat_name = "lat", ncE
 
     if(missing(ncEnv) || sum(!is.na(ncEnv))==0)
     {
-        ncEnv <- list(lon_min=list(), lon_max=list(), lon_num=list(), lat_min=list(), lat_max=list(), lat_num=list(), var_type=list(), compressed=list(), offset_type="Q", size_type="I", projection=list())
+        ncEnv <- list(lon_min=list(), lon_max=list(), lon_num=list(), lat_min=list(), lat_max=list(), lat_num=list(), var_type=list(), compressed=list(), offset_type="Q", size_type="I", projection=list(), fill_value=list())
     }
 
     lon_data = ncvar_get(nc_in_file, lon_name)
@@ -327,6 +327,7 @@ write_nc_env = function(in_file, folder, lon_name = "lon", lat_name = "lat", ncE
     ncEnv$var_type[[varName]] = get_struct_typecode(nc_in_file$var[[1]]$prec)
     # projection = "+proj=utm +zone=30 +ellps=GRS80 +units=m +no_defs"
     ncEnv$projection[[varName]] = st_crs(st_sfc(st_point(c(0, 0)), crs = paste0("+init=epsg:", epsg)))$proj4string
+    ncEnv$fill_value[[varName]] = nc_in_file$var[[1]]$missval
 
     text.js <- ""
     text.js <- paste(text.js, listRtojs(name="lon_min", value=ncEnv$lon_min))
@@ -340,6 +341,7 @@ write_nc_env = function(in_file, folder, lon_name = "lon", lat_name = "lat", ncE
     text.js <- paste0(text.js, "var offset_type = ", "'", ncEnv$offset_type, "'", "\n")  
     text.js <- paste0(text.js, "var size_type = ", "'", ncEnv$size_type, "'", "\n")    
     text.js <- paste(text.js, arrayRtojs(name="projection", value=ncEnv$projection, type="character")) 
+    text.js <- paste(text.js, arrayRtojs(name="fill_value", value=ncEnv$fill_value, type="numeric"))
 
     nc_close(nc_in_file)
 
