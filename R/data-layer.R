@@ -43,12 +43,13 @@ library(ncdf4)
 #' @param epsg epsg
 #' @param maxzoom maxzoom
 #' @param timeshift timeshift
+#' @param generate_times generate_times
 #' @export
 #' @examples
 #' write_data_layer(file="SPREAD_pen_pcp.nc", folder="pen")
 #' write_data_layer(file="SPREAD_bal_pcp.nc", folder="bal", timeshift=7670)
 #' write_data_layer(file="SPREAD_can_pcp.nc", folder="can", timeshift=7670)
-write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0)
+write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0, generate_times)
 {
 	# open nc
 	nc = nc_open(file)
@@ -122,6 +123,12 @@ write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0)
 		maxzoom <- maxzoom + 1
 	}
 
+	big_range <- 100
+	if(missing(generate_times))
+	{
+		generate_times <- seq(from=1, to=length(times), by=big_range)
+	}
+
 	# progress bar
 	pb <- txtProgressBar(style = 3)	
 
@@ -155,9 +162,10 @@ write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0)
 		ptm <- proc.time()[3]
 		# read raster
 		index <- raster::as.matrix(r.crs.ok)
-		range <- 100
+		range <- big_range
+		
 		# for each time
-		for(time in seq(from=1, to=length(times), by=range))
+		for(time in generate_times)
 		{
 			# set progress bar
 			setTxtProgressBar(pb, time / length(times) * (zoom - 2 + 1) / (maxzoom - 2 + 1))
