@@ -330,7 +330,7 @@ write_nc_env = function(in_file, folder, lon_name = "lon", lat_name = "lat", ncE
 
     # Check if the missval attribute exists in the netCDF
     var_atts = ncatt_get(nc_in_file, varid = nc_in_file$var[[1]])
-    ncEnv$fillvalue[[varName]] = ("_FillValue" %in% names(var_atts) ? nc_in_file$var[[1]]$missval : NaN)
+    ncEnv$fillvalue[[varName]] = if ("_FillValue" %in% names(var_atts)) nc_in_file$var[[1]]$missval else NaN
 
     text.js <- ""
     text.js <- paste(text.js, listRtojs(name="lon_min", value=ncEnv$lon_min))
