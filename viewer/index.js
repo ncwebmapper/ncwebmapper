@@ -433,7 +433,11 @@ function downloadCSV(event, downloadFile=true){
                       // Descomprir los datos recibidos (si están comprimidos)
                       const uncompressedArray = (compressed[varName][0] ? pako.inflate(chunk) : chunk);
                       // Crear un array de valores a partir de los bytes
-                      const floatArray = Array.from(chunkStruct.iter_unpack(uncompressedArray.buffer), x => x[0]);                                // Convertir los valores de coma flotante en una cadena de texto con
+                      const floatArray = Array.from(chunkStruct.iter_unpack(uncompressedArray.buffer), x => x[0]);     // Convertir los valores de coma flotante en una cadena de texto con
+                      // Convertimos los fillvalues a NaN
+                      floatArray.forEach((value, index, array) => {
+                          if (!isNaN(value) && value == fillvalue[varName][0]) array[index] = NaN;
+                      });
                       // formato ASCII
                       let asciiResult = "dates;" + varName + "\n";    // Cabecera CSV
                       baseData = zip_python(times[varName], floatArray);

@@ -312,7 +312,7 @@ write_nc_env = function(in_file, folder, lon_name = "lon", lat_name = "lat", ncE
 
     if(missing(ncEnv) || sum(!is.na(ncEnv))==0)
     {
-        ncEnv <- list(lon_min=list(), lon_max=list(), lon_num=list(), lat_min=list(), lat_max=list(), lat_num=list(), var_type=list(), compressed=list(), offset_type="Q", size_type="I", projection=list())
+        ncEnv <- list(lon_min=list(), lon_max=list(), lon_num=list(), lat_min=list(), lat_max=list(), lat_num=list(), var_type=list(), compressed=list(), offset_type="Q", size_type="I", projection=list(), fillvalue=list())
     }
 
     lon_data = ncvar_get(nc_in_file, lon_name)
@@ -328,6 +328,10 @@ write_nc_env = function(in_file, folder, lon_name = "lon", lat_name = "lat", ncE
     # projection = "+proj=utm +zone=30 +ellps=GRS80 +units=m +no_defs"
     ncEnv$projection[[varName]] = st_crs(st_sfc(st_point(c(0, 0)), crs = paste0("+init=epsg:", epsg)))$proj4string
 
+    # Check if the missval attribute exists in the netCDF
+    var_atts = ncatt_get(nc_in_file, varid = nc_in_file$var[[1]])
+    ncEnv$fillvalue[[varName]] = if ("_FillValue" %in% names(var_atts)) nc_in_file$var[[1]]$missval else NaN
+
     text.js <- ""
     text.js <- paste(text.js, listRtojs(name="lon_min", value=ncEnv$lon_min))
     text.js <- paste(text.js, arrayRtojs(name="lon_max", value=ncEnv$lon_max, type="numeric"))
@@ -340,6 +344,7 @@ write_nc_env = function(in_file, folder, lon_name = "lon", lat_name = "lat", ncE
     text.js <- paste0(text.js, "var offset_type = ", "'", ncEnv$offset_type, "'", "\n")  
     text.js <- paste0(text.js, "var size_type = ", "'", ncEnv$size_type, "'", "\n")    
     text.js <- paste(text.js, arrayRtojs(name="projection", value=ncEnv$projection, type="character")) 
+    text.js <- paste(text.js, arrayRtojs(name="fillvalue", value=ncEnv$fillvalue, type="numeric"))
 
     nc_close(nc_in_file)
 
