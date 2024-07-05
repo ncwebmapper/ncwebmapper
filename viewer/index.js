@@ -902,6 +902,7 @@ function init(){
   customMap.addLayer(hyddaBase);
   customMap.addLayer(droughtOverlayMap);
   customMap.addLayer(googleLabelLayer2);
+  L.control.attribution({prefix: '<a href="' + info_html + '">' + referenceTheDataText + '</a>'}).addTo(map);
 
   customMap.addTo(map);
 
