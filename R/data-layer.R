@@ -34,6 +34,7 @@
 library(raster)
 library(R.utils)
 library(ncdf4)
+library(terra)
 
 # source("functions.R")
 
@@ -151,17 +152,23 @@ write_data_layer <- function(file, folder, epsg, maxzoom, timeshift = 0, generat
 		extent(r) <- c(lon[1] - dx/2, rev(lon)[1] + dx/2, lat[1] - dy/2, rev(lat)[1] + dy/2)
 		crs(r) <- crs(paste0("+init=epsg:", epsg))
 
+		# r_good <- raster(ncol=ncol*2,
+		# 									nrow=nrow*2-2,
+		# 									crs = CRS("+init=epsg:4326"))
+		# extent(r_good) <- c(-180, 180, -90, 90)
+		# r <- terra::project(rast(r), rast(r_good), method="near", use_gdal=TRUE) 
+
 		# warp to mercator
 		r.ok <- raster(ncol=256*(x2[1]-x1[1]+1), 
 					nrow=256*(x2[2]-x1[2]+1), 
 					crs = CRS("+init=epsg:3857"))
 		extent(r.ok) <- c(floor(bounds1[1]), floor(bounds2[3]),
 					floor(bounds2[2]), floor(bounds1[4]))
-		r.crs.ok <- projectRaster(from=r, to=r.ok, method="ngb")
+		r.crs.ok <- terra::project(rast(r), rast(r.ok), method="near", use_gdal=TRUE)
 
 		ptm <- proc.time()[3]
 		# read raster
-		index <- raster::as.matrix(r.crs.ok)
+		index <- raster::as.matrix(raster(r.crs.ok))
 		range <- big_range
 		
 		# for each time
