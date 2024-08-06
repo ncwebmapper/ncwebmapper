@@ -399,6 +399,17 @@ function getTypeSize(type) {
     }
 }
 
+function areNumbersAlmostEqual(num1, num2, relativeTolerance = 1e-12) {
+  // Calculate the maximum absolute value of num1 and num2
+  const maxNum = Math.max(Math.abs(num1), Math.abs(num2));
+  
+  // Calculate the relative tolerance
+  const tolerance = maxNum * relativeTolerance;
+  
+  // Compare the absolute difference to the relative tolerance
+  return Math.abs(num1 - num2) <= tolerance;
+}
+
 //x = "20"; y = "12"
 function downloadCSV(event, downloadFile=true){
   var pixelPoligon = null;
@@ -436,7 +447,7 @@ function downloadCSV(event, downloadFile=true){
                       const floatArray = Array.from(chunkStruct.iter_unpack(uncompressedArray.buffer), x => x[0]);     // Convertir los valores de coma flotante en una cadena de texto con
                       // Convertimos los fillvalues a NaN
                       floatArray.forEach((value, index, array) => {
-                          if (!isNaN(value) && value == fillvalue[varName][0]) array[index] = NaN;
+                          if (!isNaN(value) && areNumbersAlmostEqual(value, fillvalue[varName][0])) array[index] = NaN;
                       });
                       // formato ASCII
                       let asciiResult = "dates;" + varName + "\n";    // Cabecera CSV
