@@ -416,7 +416,7 @@ function downloadCSV(event, downloadFile=true){
   let chunkDataStruct = struct('<' + offset_type + size_type);
   let chunkStruct = struct('<' + var_type[varName][0]);
 
-  const mapCoords = event.latlng;
+  const mapCoords = event.latlng.wrap();
   const ncCoords = convert2NcCoords(mapCoords);
   const pixelIndexes = locatePixelIndexes(ncCoords);
   // Cálculo coordenadas centro pixel en EPSG:4326 - WGS 84
@@ -999,6 +999,7 @@ function init(){
   function newDroughtOverlayMap(mapFunction){
     droughtOverlayMapAux = L.tileLayerPro(mapFunction, {
       zIndex: 6,
+      // opacity: 0.5,
       bounds: marginBounds
     });
     return droughtOverlayMapAux;
@@ -1049,7 +1050,7 @@ function init(){
     };
     clearTimeout(mouseTimeOut);
     mouseTimeOut = setTimeout(function(){
-      coor = extractCoorZoom(event.latlng, zoom, mousemoveValue)
+      coor = extractCoorZoom(event.latlng.wrap(), zoom, mousemoveValue)
     }, 500);
     if(typeof popup !== "undefined"){
       map.closePopup(popup);
@@ -1102,7 +1103,7 @@ function init(){
         }
       }
       // coor = extractCoorZoom(latlng, levelcsv, launchPop, true);
-      coor = extractCoorZoom(latlng, zoom, launchPop, false);
+      coor = extractCoorZoom(latlng.wrap(), zoom, launchPop, false);
   }
 
   var returnClickPopUp = function(nothing, options){
