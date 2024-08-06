@@ -928,7 +928,7 @@ function init(){
     };
     clearTimeout(mouseTimeOut);
     mouseTimeOut = setTimeout(function(){
-      coor = extractCoorZoom(event.latlng, zoom, mousemoveValue)
+      coor = extractCoorZoom(event.latlng.wrap(), zoom, mousemoveValue)
     }, 500);
     if(typeof popup !== "undefined"){
       map.closePopup(popup);
@@ -979,7 +979,7 @@ function init(){
           controlCoordinates._update({latlng: latlng});
         }
       }
-      coor = extractCoorZoom(latlng, levelcsv, launchPop, true)      
+      coor = extractCoorZoom(latlng.wrap(), levelcsv, launchPop, true)      
   }
 
   var returnClickPopUp = function(nothing, options){
